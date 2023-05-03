@@ -13,9 +13,8 @@ import termcolor
 
 ## Load the full graph
 
-MC1_path = "/home/lukas/eth/ai_center/MC1"
 # Load the JSON file
-with open(os.path.join(MC1_path, "V1/MC1.json"), 'r') as f:
+with open("data/MC1.json", 'r') as f:
     json_data = json.load(f)
 
 # Convert the JSON data to a networkx graph
