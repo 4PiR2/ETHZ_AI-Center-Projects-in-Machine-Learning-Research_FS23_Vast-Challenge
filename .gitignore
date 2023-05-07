@@ -3,6 +3,7 @@ node_modules
 .vscode
 *.config
 clips
+.idea
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -131,3 +132,5 @@ dmypy.json
 
 # MISC
 .DS_Store
+
+test
