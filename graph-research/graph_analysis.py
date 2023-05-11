@@ -7,6 +7,7 @@ from community import community_louvain
 from pyvis.network import Network
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
+import umap
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 import numpy as np
@@ -82,11 +83,16 @@ for entity in entities_to_investigate:
             print(e)
 
 ## Graph Embedding 2D
+use_umap = True
 # Convert the graph to an adjacency matrix
 adj_matrix = nx.to_numpy_array(subgraph)
-# Apply t-SNE to reduce the dimensionality to 2
-tsne = TSNE(n_components=2)
-embedding_2d = tsne.fit_transform(adj_matrix)
+
+if use_umap: 
+    umap_model = umap.UMAP(n_components=2)
+    embedding_2d = umap_model.fit_transform(adj_matrix)
+else:
+    tsne = TSNE(n_components=2)
+    embedding_2d = tsne.fit_transform(adj_matrix)
 
 # Get the unique community IDs and assign a color to each
 unique_communities = [partition[entity] for entity in entities_to_investigate]
@@ -106,14 +112,17 @@ for community_id, color in color_map.items():
     ax.scatter(embedding_2d[indices, 0], embedding_2d[indices, 1], c=[color], label=f'Community {community_id}')
 ax.legend()
 ax.scatter(embedding_2d[:, 0], embedding_2d[:, 1], c=node_colors, edgecolors=edgecolors)
-plt.title("2D Graph Embedding with t-SNE")
+plt.title("2D Graph Embedding with "+"U-MAP" if use_umap else "t-SNE")
 plt.show()
 
 ## Graph Embedding Clustering
-# Apply t-SNE to reduce the dimensionality to a lower dimension
 lower_dimension = 3
-tsne = TSNE(n_components=lower_dimension)
-embedding = tsne.fit_transform(adj_matrix)
+if use_umap: 
+    umap_model = umap.UMAP(n_components=lower_dimension)
+    embedding = umap_model.fit_transform(adj_matrix)
+else:
+    tsne = TSNE(n_components=lower_dimension)
+    embedding = tsne.fit_transform(adj_matrix)
 
 # Perform clustering and find the optimal number of clusters using silhouette score
 cluster_range = range(2, 6)
