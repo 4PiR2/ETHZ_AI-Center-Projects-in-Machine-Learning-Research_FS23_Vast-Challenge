@@ -151,9 +151,8 @@ function App() {
           </>
 
           {showGraph === "1" ? (
-            <div>
-              {/* TODO: Jiale add all nodes data information */}
-            </div>
+            /* TODO: Jiale add all nodes data information */
+            <iframe src="./cosmos.html" width="100%" height="1000px"></iframe>
           ) : (
             <div>
               {/* TODO: Lukas add G6 data information */}

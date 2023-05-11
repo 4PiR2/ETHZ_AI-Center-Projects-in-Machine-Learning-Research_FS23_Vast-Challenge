@@ -11,7 +11,7 @@ export type Link = {
   target: string;
 };
 
-import * as data from './data/MC1.json';
+import * as data from '../data/MC1.json';
 let nodes_data = data['nodes'];
 let id2uid: { [id: string | number]: number } = {};
 
