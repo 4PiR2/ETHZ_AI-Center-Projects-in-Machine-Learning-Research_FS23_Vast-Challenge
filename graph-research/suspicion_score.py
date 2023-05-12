@@ -146,3 +146,9 @@ for i, (k, v) in enumerate(sorted_scores.items()):
         break
     print(k, v)
 
+## Scores of entities to investigate 
+entities_to_investigate = ['Mar de la Vida OJSC', 979893388, 'Oceanfront Oasis Inc Carriers', 8327]
+
+for entity in entities_to_investigate:
+    entity = to_lowercase(entity)
+    print(entity, suspicion_scores[entity])
