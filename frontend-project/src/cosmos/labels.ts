@@ -29,14 +29,15 @@ export class CosmosLabels<
       );
 
       // Set label properties
-      let label = nodes_all[parseInt(nodeId)].label;
-      if (label) {
+      let node = nodes_all[parseInt(nodeId)]
+      if (node.label) {
         this.labels[index] = {
           id: nodeId,
-          text: label,
+          text: node.label,
           x: screenPosition[0],
           y: screenPosition[1] - (radius + 2),
-          opacity: 1
+          opacity: 1,
+          color: node.nsuspicious? '#ff0000ff' : '#000000ff'
         };
       }
       index += 1;

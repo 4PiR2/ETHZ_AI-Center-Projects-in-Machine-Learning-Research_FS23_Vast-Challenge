@@ -21,12 +21,13 @@ let isPaused = false;
 let graphNodes = nodes_init;
 let graphLinks = links_init;
 
-let add_nodes = true;
+let is_add_nodes = true;
+
 if (config.events)
   config.events.onClick = (node, i, pos, event) => {
     if (node && i !== undefined) {
       let nodes_id: string[] = [];
-      if (add_nodes) {
+      if (is_add_nodes) {
         let nodes_id_old: string[] = [];
         graphNodes.forEach((n) => {
           nodes_id_old.push(n.id);
@@ -76,6 +77,7 @@ if (config.events)
       // graph.unselectNodes();
       // graph.selectNodeById(node.id);
       graph.trackNodePositionsByIds(nodes_id);
+      cosmosLabels.update(graph);
     }
     // console.log("Clicked node: ", node);
   };
@@ -113,3 +115,17 @@ function togglePause() {
 }
 
 pauseButton.addEventListener("click", togglePause);
+
+const editButton = document.getElementById("edit") as HTMLDivElement;
+
+function toggleEdit() {
+  if (is_add_nodes) {
+    is_add_nodes = false;
+    editButton.textContent = "Removal Mode (Click to Toggle to Addition Mode)";
+  } else {
+    is_add_nodes = true;
+    editButton.textContent = "Addition Mode (Click to Toggle to to Removal Mode)";
+  }
+}
+
+editButton.addEventListener("click", toggleEdit);
