@@ -17,14 +17,6 @@ with open("data/MC1.json", 'r') as f:
 
 # Convert the JSON data to a networkx graph
 graph = json_graph.node_link_graph(json_data)
-
-types = set()
-for k, v in graph.nodes.items():
-    try:
-        s.add(v['type'])
-    except:
-        pass
-print(s)
 ## Check names with heuristic
 def find_sus_heuristic(company_name):
     suspicious_keywords = [    'laundering', 'smuggling', 'trafficking', 'counterfeit',    'blackmarket', 'pirate', 'illegal', 'fraud', 'scam', 'ponzi',    'underground', 'darkweb', 'darknet', 'hacking', 'cybercrime',    'money laundering', 'human trafficking', 'arms trafficking', 'drug',    'child pornography', 'prostitution', 'embezzlement', 'bribery', 'extortion',    'money laundering scheme', 'insider trading', 'market manipulation', 'pyramid scheme',    'phishing', 'ransomware', 'malware', 'identity theft', 'data breach',    'counterfeit goods', 'bootlegging', 'smuggled goods', 'stolen goods', 'forged documents',    'unlicensed gambling', 'tax evasion', 'organized crime', 'terrorist financing',    'arms dealing', 'illegal arms trade', 'human smuggling', 'organ trafficking',    'environmental crime', 'cyber espionage', 'state-sponsored hacking', 'hacktivism',    'ransomware attack', 'cryptojacking', 'cyber extortion', 'ransom payment',    'narcotics', 'opiates', 'heroin', 'cocaine', 'methamphetamine', 'fentanyl',    'illegal fishing', 'overfishing', 'fishing quota', 'poaching', 'whaling',    'wildlife trafficking', 'ivory smuggling', 'endangered species trade', 'poisoning wildlife',    'child labor', 'forced labor', 'slave', 'human rights abuse', 'human exploitation',    'genital mutilation', 'forced marriage', 'honor killing', 'child soldier',    'arms smuggling', 'weapons trafficking', 'missile technology export', 'nuclear proliferation']
