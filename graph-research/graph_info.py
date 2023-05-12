@@ -14,6 +14,7 @@ def summarize_graph(file_path):
     edge_types = {}
     connectivity = {}
     edge_weights = []
+    countries = []
 
     for node in nodes:
         if "type" in node:
@@ -23,6 +24,8 @@ def summarize_graph(file_path):
             else:
                 node_types[node_type] = 1
         connectivity[node["id"]] = 0
+        if "country" in node:
+            countries.append(node["country"])
 
     for edge in edges:
         edge_type = edge["type"]
@@ -47,6 +50,8 @@ def summarize_graph(file_path):
     print(f"Multigraph: {multigraph}")
     print(f"Total Nodes: {len(nodes)}")
     print(f"Total Edges: {len(edges)}")
+    print(f"Number of Countries: {len(set(countries))}")
+    print(f"Countries: ", sorted(set(countries)))
 
     print("\nNode Types:")
     for node_type, count in node_types.items():

@@ -4,6 +4,7 @@ node_modules
 *.config
 clips
 .idea
+.parcel-cache
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
