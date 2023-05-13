@@ -17,8 +17,8 @@ plot_colors_1 = [
 
 
 class Node:
-    def __init__(self, _uid: int, **nattrs):
-        self.uid: int = _uid
+    def __init__(self, _uid: str, **nattrs):
+        self.uid: str = _uid
         self.nattrs: dict = nattrs
         self.ei: dict[Node, list[Edge]] = {}
         self.eo: dict[Node, list[Edge]] = {}
@@ -26,7 +26,7 @@ class Node:
     def __eq__(self, other):
         if isinstance(other, Node):
             return self.uid == other.uid
-        elif isinstance(other, int):
+        elif isinstance(other, str):
             return self.uid == other
         else:
             return False
@@ -50,7 +50,7 @@ class Edge:
 
 class G:
     def __init__(self):
-        self.nodes: dict[int, Node] = {}
+        self.nodes: dict[str, Node] = {}
         self.edges: dict[[Node, Node], list[Edge]] = {}
 
     def add_n(self, *nodes: Node):
@@ -79,16 +79,19 @@ class G:
 
     def to_nx(self) -> nx.Graph:
         g = nx.MultiDiGraph()
-        for n in self.nodes.keys():
-            g.add_nodes_from([(n, )])
+        for n in self.get_nodes_uid():
+            g.add_nodes_from([(n, {})])
         for (s, t), el in self.edges.items():
             for e in el:
                 g.add_edges_from([(s.uid, t.uid, {'weight': e.eattrs['weight']})], )
         return g
 
-    def sub_graph(self, uids: list[int] = None):
+    def get_nodes_uid(self):
+        return list(self.nodes.keys())
+
+    def sub_graph(self, uids: list[str] = None):
         if uids is None:
-            uids = self.nodes.keys()
+            uids = self.get_nodes_uid()
         g = G()
         for n in self.nodes.values():
             if n.uid in uids:
@@ -99,46 +102,49 @@ class G:
                     g.add_e(Edge(g.nodes[s.uid], g.nodes[t.uid], **e.eattrs))
         return g
 
-    def bfs(self, start_uid: int, n_layers: int = -1, flatten: bool = True) -> list:
-        visited = torch.zeros(len(self.nodes), dtype=torch.bool)
+    def bfs(self, start_uid: str, n_layers: int = -1, flatten: bool = True) -> list:
+        visited = set()
         results = [[]]
-        queue = [start_uid, -1]
+        queue = [start_uid, '']
         while queue and n_layers != 0:
             m = queue.pop(0)
-            if m < 0:
+            if m == '':
                 n_layers -= 1
                 results.append([])
-                queue.append(-1)
+                queue.append('')
                 continue
-            if visited[m]:
+            if m in visited:
                 continue
-            visited[m] = True
+            visited.add(m)
             results[-1].append(m)
             queue += [node.uid for node in self.nodes[m].eo.keys()] + [node.uid for node in self.nodes[m].ei.keys()]
         if flatten:
-            return list(visited.nonzero())
+            return list(visited)
         else:
             return results
 
-    def get_adjacency_mat(self, weighted: bool = False) -> torch.Tensor:
-        mat = nx.adjacency_matrix(self.to_nx(), nodelist=self.nodes.keys(), weight='weight' if weighted else None)
+    def get_adjacency_mat(self, nodelist: list = None, weighted: bool = False) -> torch.Tensor:
+        mat = nx.adjacency_matrix(
+            self.to_nx(),
+            nodelist=self.get_nodes_uid() if nodelist is None else nodelist,
+            weight='weight' if weighted else None
+        )
         return torch.tensor(mat.todense())
 
     def connected_components(self) -> list[list]:
-        return sorted(nx.connected_components(self.to_nx().to_undirected(as_view=True)), key=len, reverse=True)
+        connected_components = nx.connected_components(self.to_nx().to_undirected(as_view=True))
+        connected_components = sorted([sorted(cc) for cc in connected_components], key=len, reverse=True)
+        return connected_components
 
-    def to_vis(self, html_path: str, weight: torch.Tensor = None):
+    def to_vis(self, html_path: str):
         g = nx.MultiDiGraph()
-        if weight is None:
-            weight_mat = self.get_adjacency_mat(True)
-            weight = weight_mat.sum(0) + weight_mat.sum(1)
         for i, (uid, node) in enumerate(self.nodes.items()):
             n = node.nattrs
             properties = {
                 'label': (f"[{n['type'][:2].upper()}] " if n['type'] else '') + f"{n['id']}" + (
                     f" ({n['country']})" if n['country'] else ''),
                 'color': 'red' if n['*'] else '#0000ff77',
-                'size': float(weight[i] ** .5),
+                'size': n['weight'] ** .5,
                 **copy.deepcopy(n),
             }
             g.add_nodes_from([(uid, properties), ])
@@ -182,12 +188,10 @@ def load_mc1(json_path: str) -> G:
         for k in ['country', 'type']:
             if k not in node:
                 node[k] = ''
-        node['uid'] = nid2uid[node['id']] = len(nid2uid)
+        node['uid'] = nid2uid[node['id']] = f'#{len(nid2uid):>04}'
         node['ntid'] = ntids[node['type']]
         node['cid'] = cids[node['country']]
-        node['*'] = False
-    for entity in entities:
-        nodes[nid2uid[entity]]['*'] = True
+        node['*'] = node['id'] in entities
 
     etypes = sorted([
         '', 'family_relationship', 'membership', 'ownership', 'partnership',
@@ -196,7 +200,7 @@ def load_mc1(json_path: str) -> G:
     edges = {}
     for edge in data['links']:
         # dataset, key, source, target, type, weight | srcid, tgtid, etid
-        key = edge['src_uid'], edge['tgt_uid'] = nid2uid[edge['source']], nid2uid[edge['target']]
+        key = edge['srcid'], edge['tgtid'] = nid2uid[edge['source']], nid2uid[edge['target']]
         edge['etid'] = etids[edge['type']]
         if key in edges:
             edges[key].append(edge)
@@ -208,39 +212,42 @@ def load_mc1(json_path: str) -> G:
         g.add_n(Node(n['uid'], **n))
     for el in edges.values():
         for e in el:
-            g.add_e(Edge(g.nodes[e['src_uid']], g.nodes[e['tgt_uid']], **e))
+            g.add_e(Edge(g.nodes[e['srcid']], g.nodes[e['tgtid']], **e))
+    weight_mat = g.get_adjacency_mat(weighted=True)
+    weight = weight_mat.sum(0) + weight_mat.sum(1)
+    for n, w in zip(g.nodes.values(), weight):
+        n.nattrs['weight'] = float(w)
     return g
 
 
 def vis_top(k: int = 50):
     g = load_mc1('../data/MC1.json')
-    weight_matrix = g.get_adjacency_mat(True)
+    g = g.sub_graph(g.connected_components()[0])
+    weight_matrix = g.get_adjacency_mat(weighted=True)
     weight_in, weight_out = weight_matrix.sum(0), weight_matrix.sum(1)
     weight = weight_in + weight_out
     weight_order = weight.argsort(descending=True).argsort()
     mask_weight = weight_order < k
-    h = g.sub_graph(mask_weight.nonzero())
-    h.to_vis(f'top_{k}.html', weight[mask_weight])
+    h = g.sub_graph([list(g.get_nodes_uid())[i] for i in mask_weight.nonzero()])
+    h.to_vis(f'top_{k}.html')
 
 
 def vis_bfs(k: int = 2):
     g = load_mc1('../data/MC1.json')
-    weight_matrix = g.get_adjacency_mat(True)
-    weight_in, weight_out = weight_matrix.sum(0), weight_matrix.sum(1)
-    weight = weight_in + weight_out
-    weight_order = weight.argsort(descending=True).argsort()
     nodes_df, _ = g.to_df()
     bfs_results = []
     for entity in nodes_df[nodes_df['*']]['uid'].values:
-        if weight_order[entity] < 50:
-            continue
-        bfs_results += g.bfs(start_uid=entity, n_layers=2)
+        if g.nodes[entity].nattrs['id'] != 979893388:
+            bfs_results += g.bfs(start_uid=entity, n_layers=2)
     bfs_results.sort()
     h = g.sub_graph(bfs_results)
-    h.to_vis(f'bfs_{k}.html', weight[bfs_results])
+    h.to_vis(f'bfs_{k}.html')
 
 
 def vis_outliers():
+    vis_top()
+    vis_bfs()
+    vis_outliers()
     g = load_mc1('../data/MC1.json')
     components_id = g.connected_components()
     outliers = []
@@ -253,14 +260,14 @@ def vis_outliers():
 def main():
     g = load_mc1('../data/MC1.json')
     components_id = g.connected_components()
+    g0 = g.sub_graph(components_id[0])
+    adj_mat_0 = g0.get_adjacency_mat(weighted=False)
+    plt.imsave('main_cluster.png', adj_mat_0.bool().numpy())
     outliers = []
     for i in range(1, len(components_id)):
         outliers += components_id[i]
-    g0 = g.sub_graph(components_id[0])
     g1 = g.sub_graph(outliers)
-    adj_mat_0 = g0.get_adjacency_mat(False)
-    adj_mat_1 = g1.get_adjacency_mat(False)
-    plt.imsave('main_cluster.png', adj_mat_0.bool().numpy())
+    adj_mat_1 = g1.get_adjacency_mat(nodelist=outliers, weighted=False)
     plt.imsave('outliers.png', adj_mat_1.bool().numpy())
 
 
