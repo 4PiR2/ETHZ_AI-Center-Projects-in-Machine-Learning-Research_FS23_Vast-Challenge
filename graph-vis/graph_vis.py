@@ -1,3 +1,4 @@
+import copy
 import json
 
 from matplotlib import pyplot as plt
@@ -15,164 +16,252 @@ plot_colors_1 = [
 ]
 
 
-def load_mc1(json_path: str):
+class Node:
+    def __init__(self, _uid: int, **nattrs):
+        self.uid: int = _uid
+        self.nattrs: dict = nattrs
+        self.ei: dict[Node, list[Edge]] = {}
+        self.eo: dict[Node, list[Edge]] = {}
+
+    def __eq__(self, other):
+        if isinstance(other, Node):
+            return self.uid == other.uid
+        elif isinstance(other, int):
+            return self.uid == other
+        else:
+            return False
+
+    def __hash__(self):
+        return hash(self.uid)
+
+    def __repr__(self):
+        return repr((self.uid, self.nattrs))
+
+
+class Edge:
+    def __init__(self, _src: Node, _tgt: Node, **eattrs):
+        self.src: Node = _src
+        self.tgt: Node = _tgt
+        self.eattrs: dict = eattrs
+
+    def __repr__(self):
+        return repr((self.src.uid, self.tgt.uid))
+
+
+class G:
+    def __init__(self):
+        self.nodes: dict[int, Node] = {}
+        self.edges: dict[[Node, Node], list[Edge]] = {}
+
+    def add_n(self, *nodes: Node):
+        for n in nodes:
+            self.nodes[n.uid] = n
+
+    def add_e(self, *edges: Edge):
+        for e in edges:
+            if (e.src, e.tgt) in self.edges:
+                self.edges[e.src, e.tgt].append(e)
+            else:
+                self.edges[e.src, e.tgt] = [e]
+            if e.tgt in e.src.eo:
+                e.src.eo[e.tgt].append(e)
+            else:
+                e.src.eo[e.tgt] = [e]
+            if e.src in e.tgt.ei:
+                e.tgt.ei[e.src].append(e)
+            else:
+                e.tgt.ei[e.src] = [e]
+
+    def to_df(self) -> [pd.DataFrame, pd.DataFrame]:
+        nodes = pd.DataFrame.from_dict([n.nattrs for n in self.nodes.values()])
+        edges = pd.DataFrame.from_dict([e.eattrs for el in self.edges.values() for e in el])
+        return nodes, edges
+
+    def to_nx(self) -> nx.Graph:
+        g = nx.MultiDiGraph()
+        for n in self.nodes.keys():
+            g.add_nodes_from([(n, )])
+        for (s, t), el in self.edges.items():
+            for e in el:
+                g.add_edges_from([(s.uid, t.uid, {'weight': e.eattrs['weight']})], )
+        return g
+
+    def sub_graph(self, uids: list[int] = None):
+        if uids is None:
+            uids = self.nodes.keys()
+        g = G()
+        for n in self.nodes.values():
+            if n.uid in uids:
+                g.add_n(Node(n.uid, **n.nattrs))
+        for (s, t), el in self.edges.items():
+            if s.uid in uids and t.uid in uids:
+                for e in el:
+                    g.add_e(Edge(g.nodes[s.uid], g.nodes[t.uid], **e.eattrs))
+        return g
+
+    def bfs(self, start_uid: int, n_layers: int = -1, flatten: bool = True) -> list:
+        visited = torch.zeros(len(self.nodes), dtype=torch.bool)
+        results = [[]]
+        queue = [start_uid, -1]
+        while queue and n_layers != 0:
+            m = queue.pop(0)
+            if m < 0:
+                n_layers -= 1
+                results.append([])
+                queue.append(-1)
+                continue
+            if visited[m]:
+                continue
+            visited[m] = True
+            results[-1].append(m)
+            queue += [node.uid for node in self.nodes[m].eo.keys()] + [node.uid for node in self.nodes[m].ei.keys()]
+        if flatten:
+            return list(visited.nonzero())
+        else:
+            return results
+
+    def get_adjacency_mat(self, weighted: bool = False) -> torch.Tensor:
+        mat = nx.adjacency_matrix(self.to_nx(), nodelist=self.nodes.keys(), weight='weight' if weighted else None)
+        return torch.tensor(mat.todense())
+
+    def connected_components(self) -> list[list]:
+        return sorted(nx.connected_components(self.to_nx().to_undirected(as_view=True)), key=len, reverse=True)
+
+    def to_vis(self, html_path: str, weight: torch.Tensor = None):
+        g = nx.MultiDiGraph()
+        if weight is None:
+            weight_mat = self.get_adjacency_mat(True)
+            weight = weight_mat.sum(0) + weight_mat.sum(1)
+        for i, (uid, node) in enumerate(self.nodes.items()):
+            n = node.nattrs
+            properties = {
+                'label': (f"[{n['type'][:2].upper()}] " if n['type'] else '') + f"{n['id']}" + (
+                    f" ({n['country']})" if n['country'] else ''),
+                'color': 'red' if n['*'] else '#0000ff77',
+                'size': float(weight[i] ** .5),
+                **copy.deepcopy(n),
+            }
+            g.add_nodes_from([(uid, properties), ])
+        for (s, t), el in self.edges.items():
+            for e in el:
+                properties = {
+                    'color': f"{plot_colors_0[e.eattrs['etid']]}77",
+                    'title': f"[{self.nodes[s.uid].nattrs['id']}] {e.eattrs['type']} [{self.nodes[t.uid].nattrs['id']}]",
+                    # 'label': str(e.eattrs['key']),
+                    **copy.deepcopy(e.eattrs)
+                }
+                del properties['source'], properties['target']
+                g.add_edges_from([(s.uid, t.uid, properties)], )
+        # nx.draw(g)
+        # plt.show()
+        net = Network(height='1500px', width='1500px', directed=True, notebook=True)
+        net.from_nx(g)
+        net.repulsion()
+        # net.toggle_physics(False)
+        if html_path:
+            net.show(html_path)
+
+
+def load_mc1(json_path: str) -> G:
     entities = ['FishEye International', 'Mar de la Vida OJSC', 979893388, 'Oceanfront Oasis Inc Carriers', 8327]
     # entities = ['FishEye International', 'Mar de la Vida OJSC', 'Oceanfront Oasis Inc Carriers', 8327]
 
     with open(json_path, 'r') as f:
         data = json.load(f)
 
-    node_types = sorted([
+    ntypes = sorted([
         '', 'company', 'event', 'location', 'movement', 'organization', 'person', 'political_organization', 'vessel',
     ])
-    node_types_id = {t: i for i, t in enumerate(node_types)}
+    ntids = {t: i for i, t in enumerate(ntypes)}
     nodes = data['nodes']
     countries = sorted([''] + list(set([node['country'] for node in nodes if 'country' in node])))
-    countries_id = {t: i for i, t in enumerate(countries)}
-    node_id_2_uid = {}
+    cids = {t: i for i, t in enumerate(countries)}
+    nid2uid = {}
     for node in nodes:
-        # country, dataset, id, type | country_id, type_id, uid, *
+        # country, dataset, id, type | cid, ntid, uid, *
         for k in ['country', 'type']:
             if k not in node:
                 node[k] = ''
-        node['uid'] = node_id_2_uid[node['id']] = len(node_id_2_uid)
-        node['type_id'] = node_types_id[node['type']]
-        node['country_id'] = countries_id[node['country']]
+        node['uid'] = nid2uid[node['id']] = len(nid2uid)
+        node['ntid'] = ntids[node['type']]
+        node['cid'] = cids[node['country']]
         node['*'] = False
     for entity in entities:
-        nodes[node_id_2_uid[entity]]['*'] = True
+        nodes[nid2uid[entity]]['*'] = True
 
-    edge_types = sorted([
+    etypes = sorted([
         '', 'family_relationship', 'membership', 'ownership', 'partnership',
     ])
-    edge_types_id = {t: i for i, t in enumerate(edge_types)}
+    etids = {t: i for i, t in enumerate(etypes)}
     edges = {}
     for edge in data['links']:
-        # dataset, key, source, target, type, weight | src_id, tgt_id, type_id
-        key = edge['src_id'], edge['tgt_id'] = node_id_2_uid[edge['source']], node_id_2_uid[edge['target']]
-        edge['type_id'] = edge_types_id[edge['type']]
+        # dataset, key, source, target, type, weight | srcid, tgtid, etid
+        key = edge['src_uid'], edge['tgt_uid'] = nid2uid[edge['source']], nid2uid[edge['target']]
+        edge['etid'] = etids[edge['type']]
         if key in edges:
             edges[key].append(edge)
         else:
             edges[key] = [edge]
-    return nodes, edges
 
-
-def to_graphin(ns: list[dict], es: dict[int, list[dict]], mask=None, weight=None, json_path: str = None):
-    nodes = []
-    for i, n in enumerate(ns):
-        if mask is not None and not mask[i]:
-            continue
-        node = {'id': str(n['uid'])}
-        label = {
-            'value': f"{n['id']} ({n['country']})" if n['country'] else f"{n['id']}",
-            "fill": '#ff0000' if n['*'] else '#000000',
-            # "position": 'right',
-            # "offset": [20, 5],
-        }
-        keyshape = {
-            'size': float(weight[i] ** .5) if weight is not None else 10.,
-            'stroke': plot_colors_1[n['type_id']],
-            'fill': plot_colors_1[n['type_id']],
-            'fillOpacity': .2,
-        }
-        node['style'] = {'label': label, 'keyshape': keyshape}
-        nodes.append(node)
-
-    edges = []
-    for i, ((s, t), el) in enumerate(es.items()):
-        if mask is not None and not (mask[s] and mask[t]):
-            continue
+    g = G()
+    for n in nodes:
+        g.add_n(Node(n['uid'], **n))
+    for el in edges.values():
         for e in el:
-            edge = {'source': str(s), 'target': str(t)}
-            label = {
-                # 'value': e['key'],  # 0, 1, 2, ..., 21
-            }
-            keyshape = {
-                'stroke': plot_colors_0[e['type_id']],
-                'lineWidth': e['weight'],
-                'opacity': .2,
-            }
-            edge['style'] = {'label': label, 'keyshape': keyshape}
-            edges.append(edge)
-
-    root = {'nodes': nodes, 'edges': edges, 'combos': []}
-    if json_path:
-        with open(json_path, 'w') as f:
-            json.dump(root, f, indent=2)
-    return root
+            g.add_e(Edge(g.nodes[e['src_uid']], g.nodes[e['tgt_uid']], **e))
+    return g
 
 
-def nx_vis(ns: list[dict], es: dict[int, list[dict]], mask=None, weight=None, html_path: str = None):
-    G = nx.MultiDiGraph()
-    for i, n in enumerate(ns):
-        if mask is not None and not mask[i]:
-            continue
-        n['label'] = (f"[{n['type'][:2].upper()}] " if n['type'] else '') + f"{n['id']}" + (f" ({n['country']})" if n['country'] else '')
-        n['color'] = 'red' if n['*'] else '#0000ff77'
-        n['size'] = float(weight[i] ** .5) if weight is not None else 1.
-        G.add_nodes_from([(i, n),])
-    for i, ((s, t), el) in enumerate(es.items()):
-        if mask is not None and not (mask[s] and mask[t]):
-            continue
-        for e in el:
-            del e['source'], e['target']
-            e['color'] = f"{plot_colors_0[e['type_id']]}77"
-            e['title'] = f"[{ns[s]['id']}] {e['type']} [{ns[t]['id']}]"
-            # e['label'] = str(e['key'])
-            G.add_edges_from([(s, t, e),])
-    # nx.draw(G)
-    # plt.show()
-    net = Network(height='1500px', width='1500px', directed=True, notebook=True)
-    net.repulsion()
-    # net.toggle_physics(False)
-    net.from_nx(G)
-    if html_path:
-        net.show(html_path)
-
-
-def bfs(edges_df: pd.DataFrame, visited, start_uid: int, n_layers: int = -1):
-    queue = [start_uid, -1]
-    while queue and n_layers != 0:
-        m = queue.pop(0)
-        if m < 0:
-            n_layers -= 1
-            queue.append(-1)
-            continue
-        if visited[m]:
-            continue
-        visited[m] = True
-        queue.extend(edges_df[edges_df['src_id'] == m]['tgt_id'].values)
-        queue.extend(edges_df[edges_df['tgt_id'] == m]['src_id'].values)
-
-
-def main():
-    nodes, edges = load_mc1('../data/MC1.json')
-    nodes_df = pd.DataFrame.from_dict(nodes)
-    edges_df = pd.DataFrame.from_dict([e for el in edges.values() for e in el])
-
-    mask_bfs = torch.zeros(len(nodes_df), dtype=torch.bool)
-    for entity in nodes_df[nodes_df['*']]['uid'].values:
-        mask_tmp = torch.zeros_like(mask_bfs)
-        bfs(edges_df, mask_tmp, start_uid=entity, n_layers=2)
-        mask_bfs |= mask_tmp
-
-    adjacency_matrix = torch.empty(len(nodes), len(nodes), dtype=torch.int)
-    weight_matrix = torch.zeros(len(nodes), len(nodes))
-    for (src, tgt), el in edges.items():
-        adjacency_matrix[src, tgt] = len(el)
-        for e in el:
-            weight_matrix[src, tgt] += e['weight']
-    degree_in, degree_out = weight_matrix.sum(0), weight_matrix.sum(1)
-    degree = degree_in + degree_out
+def vis_top(k: int = 50):
+    g = load_mc1('../data/MC1.json')
+    weight_matrix = g.get_adjacency_mat(True)
     weight_in, weight_out = weight_matrix.sum(0), weight_matrix.sum(1)
     weight = weight_in + weight_out
     weight_order = weight.argsort(descending=True).argsort()
-    mask_weight = weight_order < 50
+    mask_weight = weight_order < k
+    h = g.sub_graph(mask_weight.nonzero())
+    h.to_vis(f'top_{k}.html', weight[mask_weight])
 
-    nx_vis(nodes, edges, mask_weight, weight, '../graph-vis/top.html')
-    # nx_vis(nodes, edges, mask_bfs, weight, '../graph-vis/bfs2.html')
-    # to_graphin(nodes, edges, mask_bfs, weight, '../frontend-project/src/data/MC1_c.json')
+
+def vis_bfs(k: int = 2):
+    g = load_mc1('../data/MC1.json')
+    weight_matrix = g.get_adjacency_mat(True)
+    weight_in, weight_out = weight_matrix.sum(0), weight_matrix.sum(1)
+    weight = weight_in + weight_out
+    weight_order = weight.argsort(descending=True).argsort()
+    nodes_df, _ = g.to_df()
+    bfs_results = []
+    for entity in nodes_df[nodes_df['*']]['uid'].values:
+        if weight_order[entity] < 50:
+            continue
+        bfs_results += g.bfs(start_uid=entity, n_layers=2)
+    bfs_results.sort()
+    h = g.sub_graph(bfs_results)
+    h.to_vis(f'bfs_{k}.html', weight[bfs_results])
+
+
+def vis_outliers():
+    g = load_mc1('../data/MC1.json')
+    components_id = g.connected_components()
+    outliers = []
+    for i in range(1, len(components_id)):
+        outliers += components_id[i]
+    g = g.sub_graph(outliers)
+    g.to_vis('outliers.html')
+
+
+def main():
+    g = load_mc1('../data/MC1.json')
+    components_id = g.connected_components()
+    outliers = []
+    for i in range(1, len(components_id)):
+        outliers += components_id[i]
+    g0 = g.sub_graph(components_id[0])
+    g1 = g.sub_graph(outliers)
+    adj_mat_0 = g0.get_adjacency_mat(False)
+    adj_mat_1 = g1.get_adjacency_mat(False)
+    plt.imsave('main_cluster.png', adj_mat_0.bool().numpy())
+    plt.imsave('outliers.png', adj_mat_1.bool().numpy())
 
 
 if __name__ == '__main__':
