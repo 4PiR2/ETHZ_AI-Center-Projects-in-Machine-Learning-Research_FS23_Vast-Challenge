@@ -24,14 +24,11 @@ import {
 } from "@tremor/react";
 
 import { useState } from "react";
-import Graphin from '@antv/graphin';
 import { Add, DeleteOutlineRounded } from '@mui/icons-material';
 
-const data = require('./data/mock_data.json');
 
 function App() {
 
-  const data = require('./data/MC1_processed_fraction=0.10.json');
   const actions = [
     { icon: <FileCopyIcon />, name: 'Copy' },
     { icon: <SaveIcon />, name: 'Save' },
@@ -282,15 +279,26 @@ function App() {
               <Tab value="2" text="Detailed Display" />
             </TabList>
           </>
-
-          {showGraph === "1" ? (
-            /* TODO: Jiale add all nodes data information */
+          <div>
+          <div
+            style={{
+              display: showGraph === "1" ? "block" : "none",
+            }}
+          >
+            <iframe scrolling="no" 
+              src="./detailedGraphView.html"
+              width="100%"
+              height="1000px"
+            ></iframe>
+          </div>
+          <div
+            style={{
+              display: showGraph === "1" ? "none" : "block",
+            }}
+          >
             <iframe src="./cosmos.html" width="100%" height="1000px"></iframe>
-          ) : (
-            <div>
-              {/* TODO: Lukas add G6 data information */}
-            </div>
-          )}
+          </div>
+        </div>
         </div>
       </Col>
       <Box sx={{ height: 720, transform: 'translateZ(0px)', flexGrow: 1 }}>

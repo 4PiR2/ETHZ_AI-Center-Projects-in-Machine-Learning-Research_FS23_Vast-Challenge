@@ -16,7 +16,7 @@ if (config.events) {
 }
 
 let graph: Graph<Node, Link>;
-let isPaused = false;
+let isPaused = true;
 
 let graphNodes = nodes_init;
 let graphLinks = links_init;
@@ -91,6 +91,7 @@ graphNodes.forEach((node) => {
   nodes_id_init.push(node.id);
 });
 graph.trackNodePositionsByIds(nodes_id_init);
+graph.pause();
 
 
 /* ~ Demo Actions ~ */
