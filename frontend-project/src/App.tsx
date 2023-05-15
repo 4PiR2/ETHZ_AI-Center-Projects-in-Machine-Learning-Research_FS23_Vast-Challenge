@@ -26,6 +26,8 @@ import {
 import { useState } from "react";
 import { Add, DeleteOutlineRounded } from '@mui/icons-material';
 
+//@ts-ignore
+window.savedGraphs = {};
 
 function App() {
 
@@ -54,6 +56,14 @@ function App() {
   const [node4groups, setNode4Groups] = useState([{index:0}]);
 
   const handleChange1 = (e: any,i: number) => {
+    //@ts-ignore
+    const savedGraph = window.savedGraphs[node1groups[i].index];
+    //@ts-ignore
+    graph.destroyLayout();
+    //@ts-ignore
+    window.graph.read(JSON.parse(JSON.stringify(savedGraph)));
+    //@ts-ignore
+    graph.fitView();
     const onchangeVal = [...node1groups]
     setNode1Groups(onchangeVal)
   }
@@ -74,6 +84,11 @@ function App() {
   }  
 
   const handleClick1 =(idx:number)=>{
+    //@ts-ignore
+    const graphToSave = window.graph.save();
+    //@ts-ignore
+    window.savedGraphs[idx] = JSON.parse(JSON.stringify(graphToSave));
+    //@ts-ignore
     setNode1Groups([...node1groups,{index:idx}])
   }
 
@@ -90,6 +105,8 @@ function App() {
   }  
 
   const handleDelete1 =(i: number)=>{
+    //@ts-ignore
+    delete window.savedGraphs[node1groups[i].index]
     const deleteVal = [...node1groups]
     deleteVal.splice(i,1)
     setNode1Groups(deleteVal)
@@ -159,7 +176,7 @@ function App() {
                   variant="light"
                   onClick={() => {setCounter1(counter1 + 1);handleClick1(counter1)}}
                 >
-                  Add Current Selection
+                  Save view
                 </Button>
               </ListItem>
             </List>

@@ -49,6 +49,9 @@ const graph = new G6.Graph({
 function main() {
   graph.data(getInitialData());
   graph.render();
+  graph.destroyLayout();
+  window.parent.graph = graph;
+  window.parent.savedGraphs[0] = JSON.parse(JSON.stringify(graph.save()));
 }
 
 main();
