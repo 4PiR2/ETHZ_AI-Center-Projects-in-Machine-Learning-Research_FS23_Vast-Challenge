@@ -1,5 +1,6 @@
 import copy
 import json
+import pickle
 
 from matplotlib import pyplot as plt
 import networkx as nx
@@ -77,8 +78,15 @@ class G:
         edges = pd.DataFrame.from_dict([e.eattrs for el in self.edges.values() for e in el])
         return nodes, edges
 
-    def to_nx(self) -> nx.Graph:
-        g = nx.MultiDiGraph()
+    def to_nx(self, multiedges: bool = True, directed: bool = True) -> nx.Graph:
+        if multiedges and directed:
+            g = nx.MultiDiGraph()
+        elif multiedges:
+            g = nx.MultiGraph()
+        elif directed:
+            g = nx.DiGraph()
+        else:
+            g = nx.Graph()
         for n in self.get_nodes_uid():
             g.add_nodes_from([(n, {})])
         for (s, t), el in self.edges.items():
@@ -132,8 +140,8 @@ class G:
         return torch.tensor(mat.todense())
 
     def connected_components(self) -> list[list]:
-        connected_components = nx.connected_components(self.to_nx().to_undirected(as_view=True))
-        connected_components = sorted([sorted(cc) for cc in connected_components], key=len, reverse=True)
+        connected_components = nx.weakly_connected_components(self.to_nx())
+        connected_components = sorted([sorted(c) for c in connected_components], key=len, reverse=True)
         return connected_components
 
     def to_vis(self, html_path: str):
@@ -255,20 +263,39 @@ def vis_outliers():
         outliers += components_id[i]
     g = g.sub_graph(outliers)
     g.to_vis('outliers.html')
+    adj_mat = g.get_adjacency_mat(nodelist=outliers, weighted=False)
+    plt.imsave('outliers.png', adj_mat.bool().numpy())
 
 
 def main():
     g = load_mc1('../data/MC1.json')
-    components_id = g.connected_components()
-    g0 = g.sub_graph(components_id[0])
-    adj_mat_0 = g0.get_adjacency_mat(weighted=False)
-    plt.imsave('main_cluster.png', adj_mat_0.bool().numpy())
-    outliers = []
-    for i in range(1, len(components_id)):
-        outliers += components_id[i]
-    g1 = g.sub_graph(outliers)
-    adj_mat_1 = g1.get_adjacency_mat(nodelist=outliers, weighted=False)
-    plt.imsave('outliers.png', adj_mat_1.bool().numpy())
+    g = g.sub_graph(g.connected_components()[0])
+    # adj_mat = g.get_adjacency_mat(weighted=False)
+    # plt.imsave('main_cluster.png', adj_mat.bool().numpy())
+
+    # cliques = nx.community.k_clique_communities(g.to_nx(multiedges=False, directed=False), 10, cliques=None)
+    # cliques = sorted([sorted(c) for c in cliques], key=len, reverse=True)
+    # for i, c in enumerate(cliques):
+    #     h = g.sub_graph(c)
+    #     h.to_vis(f'cliques/{i:>02}.html')
+
+    # communities = nx.community.girvan_newman(g.to_nx())
+    # communities = nx.community.louvain_communities(g.to_nx(), weight='weight')
+    communities = nx.community.greedy_modularity_communities(g.to_nx(), weight='weight')
+    communities = sorted([sorted(c) for c in communities], key=len, reverse=True)
+    with open('communities.pkl', 'wb') as f:
+        pickle.dump(communities, f)
+    with open('communities.pkl', 'rb') as f:
+        communities = pickle.load(f)
+    n_edges = []
+    for i, c in enumerate(communities):
+        n_edges.append(g.sub_graph(c).to_nx().number_of_edges())
+    nodelist = []
+    for c in communities:
+        nodelist += sorted(c)
+    adj_mat = g.get_adjacency_mat(nodelist=nodelist, weighted=False)
+    plt.imsave('main_cluster2.png', adj_mat.bool().numpy())
+    pass
 
 
 if __name__ == '__main__':
