@@ -145,6 +145,18 @@ for i, (k, v) in enumerate(sorted_scores.items()):
     if i > 30:
         break
     print(k, v)
+    
+# Save scores to JSON
+
+from collections import OrderedDict
+with open("suspicion_scores.json", 'w') as f:
+    suspicion_scores = OrderedDict(sorted(suspicion_scores.items(), key=lambda x: x[1], reverse=True))
+    json.dump(suspicion_scores, f, indent=1)
+
+from collections import OrderedDict
+with open("country_suspicion_scores.json", 'w') as f:
+    country_suspicion_score = OrderedDict(sorted(country_suspicion_score.items(), key=lambda x: x[1], reverse=True))
+    json.dump(country_suspicion_score, f, indent=1)
 
 ## Scores of entities to investigate 
 entities_to_investigate = ['Mar de la Vida OJSC', 979893388, 'Oceanfront Oasis Inc Carriers', 8327]
