@@ -29,7 +29,7 @@ export class CosmosLabels<
       );
 
       // Set label properties
-      let node = nodes_all[parseInt(nodeId)]
+      let node = nodes_all[parseInt(nodeId.substring(1))]
       if (node.label) {
         this.labels[index] = {
           id: nodeId,

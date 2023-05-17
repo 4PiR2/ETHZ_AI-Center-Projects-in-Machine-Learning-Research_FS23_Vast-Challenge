@@ -16,7 +16,7 @@ if (config.events) {
 }
 
 let graph: Graph<Node, Link>;
-let isPaused = true;
+let isPaused = false;
 
 let graphNodes = nodes_init;
 let graphLinks = links_init;
@@ -48,7 +48,7 @@ if (config.events)
         nodes_id = [...new Set([...nodes_id_old, ...nodes_id_new])];
         const nodePositionsMap = graph.getNodePositionsMap();
         nodes_id.forEach((node_id) => {
-          let n = nodes_all[parseInt(node_id)];
+          let n = nodes_all[parseInt(node_id.substring(1))];
           const nodePosition = nodePositionsMap.get(node_id);
           if (nodePosition) {
             n.x = nodePosition[0];
@@ -91,8 +91,6 @@ graphNodes.forEach((node) => {
   nodes_id_init.push(node.id);
 });
 graph.trackNodePositionsByIds(nodes_id_init);
-graph.pause();
-
 
 /* ~ Demo Actions ~ */
 // Start / Pause

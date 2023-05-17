@@ -10,11 +10,11 @@ const plot_colors_1 = [
 
 export const config: GraphConfigInterface<Node, Link> = {
   backgroundColor: "#ffffffff",
-  nodeSize: (n) => Math.sqrt(n.degree_in + n.degree_out),
-  nodeColor: (n) => plot_colors_1[n.ntid] + '77',
+  nodeSize: (n) => Math.sqrt(n.weight_in + n.weight_out),
+  nodeColor: (n) => plot_colors_1[Number(n.ntid.substring(2))] + '77',
   nodeGreyoutOpacity: .1,
   linkWidth: (l) => l.weight,
-  linkColor: (l) => plot_colors_0[l.etid],
+  linkColor: (l) => plot_colors_0[Number(l.etid.substring(2))],
   linkArrows: true,
   linkGreyoutOpacity: .1,
   simulation: {

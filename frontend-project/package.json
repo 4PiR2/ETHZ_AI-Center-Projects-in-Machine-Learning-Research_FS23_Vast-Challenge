@@ -27,7 +27,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "parcel src/*.html --open",
+    "start": "parcel src/*.html --open -p 1234",
     "build": "parcel build src/**/*.html"
   },
   "eslintConfig": {
@@ -52,6 +52,7 @@
     "@parcel/packager-raw-url": "^2.8.3",
     "@parcel/transformer-webmanifest": "^2.8.3",
     "autoprefixer": "^10.4.14",
+    "buffer": "^5.7.1",
     "postcss": "^8.4.23",
     "process": "^0.11.10",
     "tailwindcss": "^3.3.2"
