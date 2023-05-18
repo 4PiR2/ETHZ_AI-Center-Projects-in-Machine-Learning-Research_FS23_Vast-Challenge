@@ -4,7 +4,7 @@ export const tooltip = new G6.Tooltip({
     getContent(e) {
       const outDiv = document.createElement('div');
       outDiv.innerHTML = `<p style="font-size: larger; font-weight: bold; margin: 0px">
-      ${e.item.getModel().id}<br>${e.item.getModel().country ?? ""}</p>`
+      ${e.item.getModel().id.split('|')[0]}<br>${e.item.getModel().country ?? ""}</p>`
       return outDiv
     },
     itemTypes: ['node']
