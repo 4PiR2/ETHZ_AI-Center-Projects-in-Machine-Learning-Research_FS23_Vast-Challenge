@@ -2,6 +2,7 @@ import copy
 import json
 import pickle
 
+from community import community_louvain
 from matplotlib import pyplot as plt
 import networkx as nx
 import pandas as pd
@@ -178,7 +179,7 @@ class G:
 
 def load_mc1(json_path: str) -> G:
     entities = ['FishEye International', 'Mar de la Vida OJSC', 979893388, 'Oceanfront Oasis Inc Carriers', 8327]
-    # entities = ['FishEye International', 'Mar de la Vida OJSC', 'Oceanfront Oasis Inc Carriers', 8327]
+    entities = entities[:2] + entities[3:]
 
     with open(json_path, 'r') as f:
         data = json.load(f)
@@ -246,16 +247,13 @@ def vis_bfs(k: int = 2):
     bfs_results = []
     for entity in nodes_df[nodes_df['*']]['uid'].values:
         if g.nodes[entity].nattrs['id'] != 979893388:
-            bfs_results += g.bfs(start_uid=entity, n_layers=2)
+            bfs_results += g.bfs(start_uid=entity, n_layers=k)
     bfs_results.sort()
     h = g.sub_graph(bfs_results)
     h.to_vis(f'bfs_{k}.html')
 
 
 def vis_outliers():
-    vis_top()
-    vis_bfs()
-    vis_outliers()
     g = load_mc1('../data/MC1.json')
     components_id = g.connected_components()
     outliers = []
@@ -267,7 +265,66 @@ def vis_outliers():
     plt.imsave('outliers.png', adj_mat.bool().numpy())
 
 
+def vis_list():
+    g = load_mc1('../data/MC1.json')
+    with open('name_oi.txt', 'r') as f:
+        names = f.readlines()
+    names = [i[:-1] for i in names]
+    uids = []
+    for name in names:
+        for uid, n in g.nodes.items():
+            if name == n.nattrs['id']:
+                uids.append(uid)
+                break
+    for uid in uids:
+        g.nodes[uid].nattrs['*'] = True
+    nodes_df, _ = g.to_df()
+    bfs_results = []
+    for entity in nodes_df[nodes_df['*']]['uid'].values:
+        if g.nodes[entity].nattrs['id'] != 979893388:
+            bfs_results += g.bfs(start_uid=entity, n_layers=2)
+    bfs_results.sort()
+    h = g.sub_graph(bfs_results)
+    h.to_vis(f'illegal.html')
+
+
+def mc():
+    g = load_mc1('../data/MC1.json')
+    g = g.sub_graph(g.connected_components()[0])
+    w = g.get_adjacency_mat(weighted=True)
+    w = w.to('cuda:0')
+    m = torch.nn.functional.normalize(w + w.T, p=1, dim=-1)
+    for _ in range(10):
+        m2 = m @ m
+        diff = (m2 - m).abs().sum()
+        m = m2
+    p = m.mean(dim=0)
+    names = [g.nodes[uid].nattrs['id'] for uid in g.get_nodes_uid()]
+    order = p.argsort(descending=True)
+    # plt.imsave('mc.png', m.detach().cpu().numpy())
+    a = 0
+
+
+def w2vec():
+    g = load_mc1('../data/MC1.json')
+    g = g.sub_graph(g.connected_components()[0])
+    w = g.get_adjacency_mat(weighted=True)
+    w = w.to('cuda:0')
+    w = w + w.T
+    # w = w @ w @ w  # diameter = 11
+    pmi = w.log() + w.sum().log() - w.sum(dim=0, keepdims=True).log() - w.sum(dim=1, keepdims=True).log()
+    pmi = pmi.relu()
+    u, s, vh = torch.linalg.svd(pmi, full_matrices=False)
+    emb = u @ (s ** .5).diag()
+    emb = emb[:, :100]
+    names = [g.nodes[uid].nattrs['id'] for uid in g.get_nodes_uid()]
+    order = (emb @ emb.T).argsort(dim=-1, descending=True)
+    # plt.imsave('mc.png', m.detach().cpu().numpy())
+    a = 0
+
+
 def main():
+    w2vec()
     g = load_mc1('../data/MC1.json')
     g = g.sub_graph(g.connected_components()[0])
     # adj_mat = g.get_adjacency_mat(weighted=False)
@@ -281,15 +338,24 @@ def main():
 
     # communities = nx.community.girvan_newman(g.to_nx())
     # communities = nx.community.louvain_communities(g.to_nx(), weight='weight')
-    communities = nx.community.greedy_modularity_communities(g.to_nx(), weight='weight')
+    partition = community_louvain.best_partition(g.to_nx(directed=False), weight='weight')
+    communities = {}
+    for node, community_id in partition.items():
+        if community_id in communities:
+            communities[community_id].append(node)
+        else:
+            communities[community_id] = [node]
+    communities = [list(c) for c in communities.values()]
+    # communities = nx.community.greedy_modularity_communities(g.to_nx(), weight='weight')
     communities = sorted([sorted(c) for c in communities], key=len, reverse=True)
-    with open('communities.pkl', 'wb') as f:
-        pickle.dump(communities, f)
-    with open('communities.pkl', 'rb') as f:
-        communities = pickle.load(f)
+    # with open('communities.pkl', 'wb') as f:
+    #     pickle.dump(communities, f)
+    # with open('communities.pkl', 'rb') as f:
+    #     communities = pickle.load(f)
     n_edges = []
     for i, c in enumerate(communities):
         n_edges.append(g.sub_graph(c).to_nx().number_of_edges())
+    print(1. - sum(n_edges) / g.to_nx().number_of_edges())
     nodelist = []
     for c in communities:
         nodelist += sorted(c)

@@ -7,13 +7,16 @@
   <body>
     <div class="app">
       <div id="labels"></div>
-      <canvas />
+      <canvas></canvas>
     </div>
     <div class="actions">
       <div class="action" id="pause">Pause</div>
       <div class="action" id="edit">Addition Mode (Click to Toggle to Removal Mode)</div>
+      <div class="action"><textarea id="freeform" name="freeform" rows="4" cols="50">MATCH (n) OPTIONAL MATCH (n)-[r]-() RETURN n, r;</textarea></div>
+      <div class="action" id="submit_query">Submit</div>
+      <div class="action" id="wait" style="visibility: hidden; color: red">Wait!</div>
     </div>
 
-    <script type="module" src="./cosmos/index.ts"></script>
+    <script type="module" src="cosmos/index.ts"></script>
   </body>
 </html>
