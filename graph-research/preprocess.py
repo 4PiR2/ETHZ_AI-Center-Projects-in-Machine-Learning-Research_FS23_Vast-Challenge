@@ -28,10 +28,35 @@ for node in data['nodes']:
 for link in data['edges']:
     link['source'] = str(link['source'])
     link['target'] = str(link['target'])
+    
+# Normalize node IDs
+def to_unique_lowercase(node, counter):
+    name = ''.join(c for c in str(node) if c.isascii())
+    return name.lower() + "|" + str(counter)
+# relabel each node with a unique lowercase name
+id_mapping = dict()
+for i, node in enumerate(data['nodes']):
+    id_mapping[node['id']] = to_unique_lowercase(node['id'], i)
+for node in data['nodes']:
+    node['id'] = id_mapping[node['id']]
 
-# Save the resulting object into a new JSON file
+for link in data['edges']:
+    link['source'] = id_mapping[link['source']]
+    link['target'] = id_mapping[link['target']]
+
+illegal_strs = [
+    'armed robbery', 'game thief', 'illegal', 'shabu', 'shark fin', 'illegal', 'deepwater horizon', 'cartel emergent weaponry use', 'dark web vendor illegal narcotics', 'heroin cocaine exchange bitcoin', 'officer pleads guilty', 'bribes exchange smuggling contraband'
+]
+# Save the resulting objects into a new JSON file
 with open('data/MC1_preprocessed.json', 'w') as f:
     json.dump(data, f, indent=2)
+illegal_ids = [node['id'] for node in data['nodes'] if any(str in node['id'] for str in illegal_strs)]
+with open('data/illegal_ids.json', 'w') as f:
+    json.dump(illegal_ids, f, indent=2)
+target_strs = ['mar de la vida ojsc', '979893388', 'oceanfront oasis inc carriers', '8327']
+target_ids = [node['id'] for node in data['nodes'] if any(str in node['id'] for str in target_strs)]
+with open('data/target_ids.json', 'w') as f:
+    json.dump(target_ids, f, indent=2)
     
 # Generate a smaller graph by removing a fraction of nodes and their corresponding edges
 fraction_to_remove = 0.9  # Remove 90% of nodes and their edges

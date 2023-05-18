@@ -20,7 +20,7 @@ const graph = new G6.Graph({
     type: 'circle',
     style: {
       fill: '#9EC9FF',
-      stroke: '#5B8FF9',
+      stroke: '#111111',
     },
     labelCfg: {
       style: {
@@ -35,12 +35,6 @@ const graph = new G6.Graph({
     style: {
       stroke: '#5B8FF9',
       lineWidth: 2,
-    },
-  },
-  nodeStateStyles: {
-    selected: {
-      stroke: '#111111',
-      lineWidth: 4, // Custom border width for selected nodes
     },
   },
   plugins: [menu, tooltip, legend]

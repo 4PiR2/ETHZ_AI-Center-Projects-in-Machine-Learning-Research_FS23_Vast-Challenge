@@ -1,6 +1,9 @@
-import d from '../data/MC1_preprocessed.json'
+import { scaleLinear } from 'd3-scale';
 
-import {FISHEYE_ID, TIP1_ID, illegalIDs} from './ids.js';
+import d from '../data/MC1_preprocessed.json'
+import suspicion_scores from '../data/suspicion_scores.json';
+
+import {FISHEYE_ID, targetIDs} from './ids.js';
 import nodeIconUnknown from './icons/unknown.png';
 import nodeIconVessel from './icons/vessel.png';
 import nodeIconPoliticalOrganization from './icons/political_organization.png';
@@ -36,17 +39,21 @@ export const typeToStroke = {
 }
 
 export function augmentNode(node) {
+    suspicion_score = suspicion_scores[node.id];
+    // Create a custom color scale using d3-scale
+    const colorScale = scaleLinear()
+    .domain([0, 0.5, 1])
+    .range(['green', 'yellow', 'red']);
     let type = node.type ?? "unknown"
     if (node.id == FISHEYE_ID) {
         type = "fisheye"
     }
-    let fill = '#3399FF80'
-    if (node.id == TIP1_ID) {
-        fill = '#C875FF80'
+    const fill = colorScale(suspicion_score);
+    let shape = 'circle';
+    if (targetIDs.includes(node.id)) {
+        shape = 'diamond'
     } else if (node.id == FISHEYE_ID) {
-        fill = '#FFD700'
-    } else if (illegalIDs.has(node.id)) {
-        fill = '#F00'
+        shape = 'star'
     }
     const augmentedNode = {
         ...node,
@@ -54,12 +61,20 @@ export function augmentNode(node) {
         style: {
             fill: fill,
         },
+        type: shape,
         icon: {
             show: true,
-            width: 25,
-            height: 25,
+            width: 22,
+            height: 22,
             img: iconMapping[type]
-        }
+        },
+        stateStyles: {
+            selected: {
+              fill: fill, 
+              lineWidth: 3, 
+              stroke: '#111111'
+            },
+        },
     }
     return augmentedNode;
 }
@@ -91,10 +106,10 @@ export function augmentEdge(edge) {
 
 export function getInitialData() {
   const newData = new Object();
-  newData.nodes = data.nodes.filter(node => node.id === TIP1_ID);
+  newData.nodes = data.nodes.filter(node => node.id === targetIDs[0]);
   newData.nodes[0].x = 0;
   newData.nodes[0].y = 0;
-  newData.nodes[0] = augmentNode(newData.nodes[0])
+  newData.nodes[0] = augmentNode(newData.nodes[0], )
   newData.edges = [];
   return newData;
 }

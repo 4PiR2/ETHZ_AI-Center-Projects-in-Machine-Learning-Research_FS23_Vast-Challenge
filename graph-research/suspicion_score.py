@@ -6,18 +6,12 @@ import json
 
 ## Load the graph
 # Load the JSON file
-with open("data/MC1.json", 'r') as f:
+with open("data/MC1_preprocessed.json", 'r') as f:
     json_data = json.load(f)
 
+json_data['links'] = json_data.pop('edges')
 # Convert the JSON data to a networkx graph
 graph = json_graph.node_link_graph(json_data)
-
-def to_lowercase(node):
-    name = ''.join(c for c in str(node) if c.isascii())
-    return name.lower()
-
-# Rename nodes to only include lowercase ascii characters
-graph = nx.relabel_nodes(graph, to_lowercase)
 
 ## Print the info found in the graph
 types = set()
@@ -130,9 +124,11 @@ def calculate_suspicion_score(graph, illegal_nodes, user_flags, country_suspicio
 
     return scores
 
-illegal_nodes = ['armed robbery', 'game thief', 'illegal', 'shabu', 'shark fin', 'illegal', 'deepwater horizon', 'cartel emergent weaponry use', 'dark web vendor illegal narcotics', 'heroin cocaine exchange bitcoin', 'officer pleads guilty', 'bribes exchange smuggling contraband']
+with open("data/illegal_ids.json", 'r') as f:
+    illegal_nodes = json.load(f)
 
-user_flags = ["leo", "yeezy", "blue bay"]
+# user_flags = ["leo", "yeezy", "blue bay"]
+user_flags = []
 
 # Turns out no illegal nodes has a country assignment
 country_suspicion_score = calculate_country_suspicion_score(illegal_nodes, graph)
@@ -159,8 +155,8 @@ with open("country_suspicion_scores.json", 'w') as f:
     json.dump(country_suspicion_score, f, indent=1)
 
 ## Scores of entities to investigate 
-entities_to_investigate = ['Mar de la Vida OJSC', 979893388, 'Oceanfront Oasis Inc Carriers', 8327]
+with open("data/target_ids.json", 'r') as f:
+    target_ids = json.load(f)
 
-for entity in entities_to_investigate:
-    entity = to_lowercase(entity)
+for entity in target_ids:
     print(entity, suspicion_scores[entity])

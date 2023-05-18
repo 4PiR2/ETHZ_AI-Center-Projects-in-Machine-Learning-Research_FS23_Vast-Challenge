@@ -1,5 +1,5 @@
 import {data, augmentNode, augmentEdge} from './data.js';
-import {TIP1_ID} from './ids.js';
+import suspicion_scores from '../data/suspicion_scores.json';
 
 function radialExpansionAroundSelection(graph) {
     const selectedNodes = graph.findAllByState('node', 'selected');
@@ -8,40 +8,49 @@ function radialExpansionAroundSelection(graph) {
     }
     const nodes = graph.getNodes();
     const nodeIds = new Set(nodes.map(node => node.get('id')));
-    const connectedNodes = new Set();
+    let connectedNodes = new Set();
     const connectedEdges = new Set();
     selectedNodes.forEach((node) => {
-    data.edges.forEach((edge) => {
-        let added = false
-        if (edge.source === node.get('id') && !nodeIds.has(edge.target)) {
-            connectedNodes.add(edge.target);
-            added = true
-        }
-        if (edge.target === node.get('id') && !nodeIds.has(edge.source)) {
-            connectedNodes.add(edge.source);
-            added = true
-        }
-        if (added) {
-            connectedEdges.add(edge)
-        }
+        data.edges.forEach((edge) => {
+            let added = false
+            if (edge.source === node.get('id') && !nodeIds.has(edge.target)) {
+                connectedNodes.add(edge.target);
+                added = true
+            }
+            if (edge.target === node.get('id') && !nodeIds.has(edge.source)) {
+                connectedNodes.add(edge.source);
+                added = true
+            }
+            if (added) {
+                connectedEdges.add(edge)
+            }
+        });
     });
-    });
-    const centerX = graph.findById(TIP1_ID).getModel().x; // replace with your desired x-coordinate
-    const centerY = graph.findById(TIP1_ID).getModel().y; // replace with your desired y-coordinate
+    const centerX = selectedNodes.reduce((acc, val) => acc + val.getModel().x, 0);
+    const centerY = selectedNodes.reduce((acc, val) => acc + val.getModel().y, 0);
+    window.parent.selectedNodes = selectedNodes;
     // calculate the radius of the circle based on the number of nodes
     const node_diam = graph.get("defaultNode").size
-    const radius = node_diam * connectedNodes.size * 0.2; // replace with your desired radius
+    let radius = node_diam * connectedNodes.size * 0.2;
+    radius = Math.max(radius, 20);
     const angleStep = (2 * Math.PI) / (connectedNodes.size);
-    let counter = 0;
+    let counter = -1;
+    connectedNodes = [...connectedNodes]
+    
+    connectedNodes.sort((a,b)=>suspicion_scores[a]-suspicion_scores[b]);
     connectedNodes.forEach((nodeId) => {
         const node = data.nodes.find((n) => n.id === nodeId);
-        const angle = counter * angleStep;
+        const angle = counter * angleStep - 0.5*Math.PI;
         const x = centerX + radius * Math.cos(angle);
         const y = centerY + radius * Math.sin(angle);
-        let newNode ={...node, x, y}
-        newNode = augmentNode(newNode);
-        graph.addItem('node', newNode);
-        counter++;
+        let newNodeData = {
+            ...node,
+            x, y,
+        }
+        newNodeData = augmentNode(newNodeData);
+        graph.addItem('node', newNodeData);
+        graph.setItemState(newNodeData.id, 'selected', true);
+        counter--;
     });
     // connectedEdges.forEach((edge) => {
     //   if (!graph.findById(edge.id)) {
