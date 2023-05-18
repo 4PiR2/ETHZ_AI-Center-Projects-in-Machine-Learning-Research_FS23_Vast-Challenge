@@ -100,7 +100,7 @@ const config: GraphConfigInterface<Node, Link> = {
 };
 
 const driver: neo4j.Driver = neo4j.driver('bolt://' + location.hostname + ':7687', neo4j.auth.basic('neo4j', '12345678'), {/* encrypted: 'ENCRYPTION_OFF' */});
-let graph: Graph<Node, Link> = new Graph(document.querySelector('canvas') as HTMLCanvasElement, config);
+let graph: Graph<Node, Link> = new Graph(document.querySelector('#graph') as HTMLCanvasElement, config);
 const cosmosLabels = new CosmosLabels<Node, Link>(document.querySelector('#labels') as HTMLDivElement, graph);
 let graphNodes: Node[] = [];
 let graphLinks: Link[] = [];
@@ -163,6 +163,7 @@ function onClick_event(node: Node | undefined, i: number | undefined, pos: [numb
             });
         }
         graph.setData(graphNodes, graphLinks, !isPaused);
+        draw_matrix();
         // graph.unselectNodes();
         // graph.selectNodeById(node.id);
         cosmosLabels.update();
@@ -258,6 +259,7 @@ function process_records(records: any) {
     graphNodes.push(n_dummy);
     graphLinks.push(e_dummy);
     graph.setData(graphNodes, graphLinks, !isPaused);
+    draw_matrix();
     graph.setZoomLevel(1.);
 }
 
@@ -314,3 +316,22 @@ function submit_query() {
     }
 }
 queryButton.addEventListener('click', () =>  submit_query());
+
+function draw_matrix() {
+    const canvas = document.querySelector('#matrix') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d');
+    let reverse_index: { [id: string]: number } = {};
+    graphNodes.forEach((node) => {
+        if (node.id != 'U9999') {
+            reverse_index[node.id] = Object.keys(reverse_index).length;
+        }
+    });
+    // @ts-ignore
+    canvas.parentElement.style.width = canvas.parentElement.style.height = canvas.width = canvas.height = Object.keys(reverse_index).length;
+    // @ts-ignore
+    ctx.fillStyle = '#f00';
+    graphLinks.forEach((link) => {
+        // @ts-ignore
+        ctx.fillRect(reverse_index[link.target], reverse_index[link.source], 1, 1);
+    });
+}
