@@ -292,8 +292,8 @@ function App() {
               onValueChange={(value) => setShowGraph(value)}
               className="mt-6"
             >
-              <Tab value="1" text="All nodes" />
-              <Tab value="2" text="Detailed Display" />
+              <Tab value="1" text="Detailed" />
+              <Tab value="2" text="Overview" />
             </TabList>
           </>
           <div>
