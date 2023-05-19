@@ -11,7 +11,7 @@ const graph = new G6.Graph({
   fitView: true,
   fitViewPadding: [200, 200, 200, 200],
   modes: {
-    default: ['drag-node', 'drag-canvas', 'zoom-canvas', 'brush-select', 'click-select'],
+    default: ['drag-node', 'drag-canvas', 'zoom-canvas', 'brush-select', 'click-select', 'drag-combo'],
   },
 //   animate: true,
   autoPaint: true,

@@ -17,6 +17,8 @@ import nodeIconCompany from './icons/company.png';
 
 export const data = d;
 
+export const idToNode = Object.fromEntries( data.nodes.map( x => [x.id, x]) );
+
 const iconMapping = {
   'unknown': nodeIconUnknown,
   'vessel': nodeIconVessel,
@@ -83,6 +85,8 @@ export function augmentEdge(edge) {
     let augmentedEdge = {
         source: edge.source,
         target: edge.target,
+        key: edge.key,
+        customId: edge.customId,
         // label: edge.type[0].toUpperCase(),
         // labelCfg: {
         //     style: {

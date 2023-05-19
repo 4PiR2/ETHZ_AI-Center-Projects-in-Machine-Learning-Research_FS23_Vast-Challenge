@@ -40,9 +40,10 @@ for i, node in enumerate(data['nodes']):
 for node in data['nodes']:
     node['id'] = id_mapping[node['id']]
 
-for link in data['edges']:
+for ctr, link in enumerate(data['edges']):
     link['source'] = id_mapping[link['source']]
     link['target'] = id_mapping[link['target']]
+    link['customId'] = ctr
 
 illegal_strs = [
     'armed robbery', 'game thief', 'illegal', 'shabu', 'shark fin', 'illegal', 'deepwater horizon', 'cartel emergent weaponry use', 'dark web vendor illegal narcotics', 'heroin cocaine exchange bitcoin', 'officer pleads guilty', 'bribes exchange smuggling contraband'

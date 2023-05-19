@@ -1,5 +1,6 @@
-import {data, augmentNode, augmentEdge} from './data.js';
+import {data, idToNode, augmentNode, augmentEdge} from './data.js';
 import suspicion_scores from '../data/suspicion_scores.json';
+import { Algorithm } from './g6.min.js';
 
 function radialExpansionAroundSelection(graph) {
     const selectedNodes = graph.findAllByState('node', 'selected');
@@ -63,43 +64,117 @@ function radialExpansionAroundSelection(graph) {
     // graph.render();
 }
 
-function addEdgesAndApplyForceClustering(graph) {
+function louvainOutputToGraphData(inputData) {
+    let data = {
+      combos: [],
+      nodes: [],
+      edges: [],
+    };
+  
+    inputData.clusters.forEach((cluster) => {
+      // Create a combo for each cluster
+      data.combos.push({
+        id: cluster.id,
+        // label: `Cluster ${cluster.id}`, // or any other label you want
+      });
+  
+      // Create nodes for each node in the cluster
+      cluster.nodes.forEach((node) => {
+        data.nodes.push({
+          id: node.id,
+          comboId: cluster.id,
+          country: idToNode[node.id].country,
+          type: idToNode[node.id].type
+        });
+      });
+    });
+  
+    return data;
+  }
+
+let comboIdCtr = 0;
+function findLouvainCommunitiesAndApplyForceClustering(graph) {
+    const selectedNodes = graph.findAllByState('node', 'selected');
+    const selectedNodeIds = selectedNodes.map(node => node.get('id'));
+    const graphData = {
+        nodes: data.nodes.filter(node => selectedNodeIds.includes(node.id)),
+        edges: data.edges.filter(edge => selectedNodeIds.includes(edge.source) && selectedNodeIds.includes(edge.target)),
+    }
+    let louvainOutput = Algorithm.louvain(graphData);
+    const newGraphData = louvainOutputToGraphData(louvainOutput);
+    newGraphData.edges = graphData.edges.map(augmentEdge);
+    newGraphData.nodes = newGraphData.nodes.map(augmentNode);
+    const oldData = JSON.parse(JSON.stringify(graph.save()));
+    graph.changeData(newGraphData);
+    const newLayout = {
+        type: 'comboForce',
+        center: [ 200, 200 ],     // The center of the graph by default
+        linkDistance: 50,         // Edge length
+        nodeStrength: 700,
+        edgeStrength: 0.2,
+        preventOverlap: true,
+        maxIteration: 400,
+        // comboCollideStrength: 1,
+        alphaDecay: 0.005,
+        onLayoutEnd: () => {
+            graph.fitView();
+            const clusterData = JSON.parse(JSON.stringify(graph.save()));
+            const oldDataCpy = structuredClone(oldData);
+            graph.destroyLayout();
+            graph.fitView();
+            graph.changeData(oldData);
+            graph.fitView();
+            selectedNodeIds.forEach(id => graph.setItemState(id, 'selected', true));
+            clusterData.combos.forEach(combo => {
+                const comboId = combo.id + comboIdCtr;
+                const newCombo = graph.addItem('combo', {
+                    id: comboId
+                });
+                graph.setItemState(newCombo, 'selected', true);
+            });
+            const clusterNodeIds = new Set(clusterData.nodes.map(n => n.id));
+            const newEdges = oldDataCpy.edges.filter(e =>
+                clusterNodeIds.has(e.source) ||
+                clusterNodeIds.has(e.target)).map(e => structuredClone(e));
+            clusterData.nodes.forEach(node => {
+                const nodeToUpdate = structuredClone(graph.findById(node.id).getModel());
+                graph.removeItem(node.id);
+                graph.addItem('node', {...nodeToUpdate, x: node.x, y: node.y, comboId: node.comboId + comboIdCtr});
+                graph.setItemState(node.id, 'selected', true);
+            });
+            newEdges.forEach(edge =>
+                graph.addItem('edge', edge));
+            graph.fitView();
+            comboIdCtr += 1;
+        }
+    }
+    graph.updateLayout(newLayout);
+}
+
+function fillEdgesForSelection(graph) {
     const selectedNodes = graph.findAllByState('node', 'selected');
     const nodeIds = new Set(selectedNodes.map(node => node.get('id')));
+    const existingEdgeIds = new Set(graph.getEdges().map(edge => edge.getModel().customId))
+    const newEdges = data.edges.filter((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target) && !existingEdgeIds.has(edge.customId))
+    newEdges.forEach(edge => graph.addItem('edge', augmentEdge(edge)));
+}
 
-    if (selectedNodes.length > 0) {
-        const newNodes = data.nodes.filter((node) => nodeIds.has(node.id))
-        const newEdges = data.edges.filter((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target))
-        const newData = {
-            nodes: newNodes.map((node) => augmentNode(node)),
-            edges: newEdges.map((edge) => augmentEdge(edge))
-        }
-        graph.changeData(newData);
-        let ctr = 0;
-        const newLayout =  {
-            type: 'force',
-            center: [200, 200], // The center of the graph by default
-            linkDistance: 200, // Edge length
-            nodeStrength: 10,
-            edgeStrength: 0.01,
-            collideStrength: 0.8,
-            nodeSize: 30,
-            alpha: 0.3,
-            alphaDecay: 0.028,
-            alphaMin: 0.01,
-            forceSimulation: null,
-            onTick: () => {
-                if (ctr % 1 === 0) {
-                    graph.fitView();
-                }
-                ctr += 1;
-            },
-            onLayoutEnd: () => {
-                graph.fitView();
-            },
-        };
-        graph.updateLayout(newLayout);
-    }
+function addEdgesForSelection(graph) {
+    const selectedNodes = graph.findAllByState('node', 'selected');
+    const nodeIds = new Set(selectedNodes.map(node => node.get('id')));
+    const graphNodes = graph.getNodes();
+    const graphIds = new Set(graphNodes.map(node => node.get('id')))
+    const existingEdgeIds = new Set(graph.getEdges().map(edge => edge.getModel().customId))
+    const newEdges = data.edges.filter((edge) => 
+        ((nodeIds.has(edge.source) && graphIds.has(edge.target)) ||
+        (nodeIds.has(edge.target) && graphIds.has(edge.source))) &&
+        !existingEdgeIds.has(edge.customId));
+    newEdges.forEach(edge => graph.addItem('edge', augmentEdge(edge)));
+}
+
+function filterNodesToSelection(graph) {
+    const nodesToRemove = graph.getNodes().filter(node => !node.getStates().includes('selected'));
+    nodesToRemove.forEach(node => graph.removeItem(node));
 }
 
 export const menu = new G6.Menu({
@@ -109,18 +184,35 @@ export const menu = new G6.Menu({
     getContent(e, graph) {
       const outDiv = document.createElement('div');
       outDiv.setAttribute('id', 'contextMenu')
-      outDiv.innerHTML = `<ul>
-          <li>Expand Selection</li>
+      if (graph.findAllByState('node', 'selected').length == 0) {
+        outDiv.innerHTML = `To apply node operations,<br> first select some nodes.`
+      } else {
+        outDiv.innerHTML = `<ul>
+          <li>Expand</li>
           <li>Focus</li>
+          <li>Cluster</li>
+          <li>Branch</li>
+          <li>Fill Edges</li>
         </ul>`
+      }
+      // TODO: Remove nodes
+      // TODO: Remove edges
+      // TODO: Remove cluster
+      // TODO: Add cluster
       return outDiv
     },
     handleMenuClick(target, item, _) {
       const graph = menu.get("graph");
-      if(target.innerHTML === 'Expand Selection') {
+      if(target.innerHTML === 'Expand') {
         radialExpansionAroundSelection(graph);
-      } else {
-        addEdgesAndApplyForceClustering(graph);
+      } else if (target.innerHTML == 'Focus') {
+        filterNodesToSelection(graph);
+      } else if (target.innerHTML == 'Cluster') {
+        findLouvainCommunitiesAndApplyForceClustering(graph);
+      } else if (target.innerHTML == 'Fill Edges') {
+        fillEdgesForSelection(graph);
+      } else if (target.innerHTML == 'Branch') {
+        addEdgesForSelection(graph);
       }
       graph.fitView();
     },
