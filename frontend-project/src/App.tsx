@@ -1,5 +1,6 @@
 import './App.css';
 import Box from '@mui/material/Box';
+import Drawer from '@mui/material/Drawer';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
@@ -54,6 +55,21 @@ function App() {
   const [node2groups, setNode2Groups] = useState([{index:0}]);
   const [node3groups, setNode3Groups] = useState([{index:0}]);
   const [node4groups, setNode4Groups] = useState([{index:0}]);
+
+  const [drawerstate, setDrawerState] = useState(false);
+
+  const toggleDrawer =
+    (anchor: "right", open: boolean) =>
+    (event: React.KeyboardEvent | React.MouseEvent) => {
+      if (
+        event.type === 'keydown' &&
+        ((event as React.KeyboardEvent).key === 'Tab' ||
+          (event as React.KeyboardEvent).key === 'Shift')
+      ) {
+        return;
+      }
+      setDrawerState(open);
+    };
 
   const handleChange1 = (e: any,i: number) => {
     //@ts-ignore
@@ -129,6 +145,18 @@ function App() {
     deleteVal.splice(i,1)
     setNode4Groups(deleteVal)
   }
+
+  const list = (anchor: "right") => (
+    <Box
+      sx={{ width: 500 }}
+      role="presentation"
+      onClick={toggleDrawer(anchor, false)}
+      onKeyDown={toggleDrawer(anchor, false)}
+    >
+      {/* TODO: Add more Evaluation Components here! */}
+      <Metric>We can add some Evaluations here ...</Metric>
+    </Box>
+  );
   
 
   return (
@@ -318,7 +346,9 @@ function App() {
         </div>
         </div>
       </Col>
-      <Box sx={{ height: 720, transform: 'translateZ(0px)', flexGrow: 1 }}>
+      <Col numColSpan={1}>
+        <Button variant="secondary" size="xl" onClick={toggleDrawer("right", true)}>Evaluation & Explanation</Button> 
+        <Box sx={{ height: 720, transform: 'translateZ(0px)', flexGrow: 1 }}>
         <SpeedDial
           ariaLabel="SpeedDial basic example"
           sx={{ position: 'absolute', bottom: 16, right: 16 }}
@@ -332,7 +362,15 @@ function App() {
             />
           ))}
         </SpeedDial>
+        <Drawer
+            anchor={"right"}
+            open={drawerstate}
+            onClose={toggleDrawer("right", false)}
+          >
+            {list("right")}
+        </Drawer>
       </Box>
+      </Col>
     </Grid>
 
 
