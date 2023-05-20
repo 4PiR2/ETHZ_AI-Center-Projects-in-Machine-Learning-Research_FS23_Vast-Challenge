@@ -14,7 +14,11 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import { Button } from "@tremor/react";
-
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
+import Popper, { PopperPlacementType } from '@mui/material/Popper';
+import Fade from '@mui/material/Fade';
+import Paper from '@mui/material/Paper';
 
 import {
   TabList,
@@ -26,6 +30,7 @@ import {
 
 import { useState } from "react";
 import { Add, DeleteOutlineRounded } from '@mui/icons-material';
+import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 
 //@ts-ignore
 window.savedGraphs = {};
@@ -51,27 +56,34 @@ function App() {
   const [counter2, setCounter2] = useState(1);
   const [counter3, setCounter3] = useState(1);
   const [counter4, setCounter4] = useState(1);
-  const [node1groups, setNode1Groups] = useState([{index:0}]);
-  const [node2groups, setNode2Groups] = useState([{index:0}]);
-  const [node3groups, setNode3Groups] = useState([{index:0}]);
-  const [node4groups, setNode4Groups] = useState([{index:0}]);
+  const [node1groups, setNode1Groups] = useState([{ index: 0 }]);
+  const [node2groups, setNode2Groups] = useState([{ index: 0 }]);
+  const [node3groups, setNode3Groups] = useState([{ index: 0 }]);
+  const [node4groups, setNode4Groups] = useState([{ index: 0 }]);
 
   const [drawerstate, setDrawerState] = useState(false);
+  const [anchorElan, setAnchorElAN] = useState<HTMLButtonElement | null>(null);
+  const [anopen, setANOpen] = useState(false);
+  const [anplacement, setANPlacement] = useState<PopperPlacementType>();
+  const [ddanchorEl, setAnchorElDD] = useState<HTMLButtonElement | null>(null);
+  const [ddopen, setDDOpen] = useState(false);
+  const [ddplacement, setDDPlacement] = useState<PopperPlacementType>();
+
 
   const toggleDrawer =
     (anchor: "right", open: boolean) =>
-    (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (
-        event.type === 'keydown' &&
-        ((event as React.KeyboardEvent).key === 'Tab' ||
-          (event as React.KeyboardEvent).key === 'Shift')
-      ) {
-        return;
-      }
-      setDrawerState(open);
-    };
+      (event: React.KeyboardEvent | React.MouseEvent) => {
+        if (
+          event.type === 'keydown' &&
+          ((event as React.KeyboardEvent).key === 'Tab' ||
+            (event as React.KeyboardEvent).key === 'Shift')
+        ) {
+          return;
+        }
+        setDrawerState(open);
+      };
 
-  const handleChange1 = (e: any,i: number) => {
+  const handleChange1 = (e: any, i: number) => {
     //@ts-ignore
     const savedGraph = window.savedGraphs[node1groups[i].index];
     //@ts-ignore
@@ -84,65 +96,81 @@ function App() {
     setNode1Groups(onchangeVal)
   }
 
-  const handleChange2 = (e: any,i: number) => {
+  const handleChange2 = (e: any, i: number) => {
     const onchangeVal = [...node2groups]
     setNode2Groups(onchangeVal)
   }
 
-  const handleChange3 = (e: any,i: number) => {
+  const handleChange3 = (e: any, i: number) => {
     const onchangeVal = [...node3groups]
     setNode3Groups(onchangeVal)
-  }  
+  }
 
-  const handleChange4 = (e: any,i: number) => {
+  const handleChange4 = (e: any, i: number) => {
     const onchangeVal = [...node4groups]
     setNode4Groups(onchangeVal)
-  }  
+  }
 
-  const handleClick1 =(idx:number)=>{
+  const handleClickAN =
+  (newPlacement: PopperPlacementType) =>
+  (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorElAN(event.currentTarget);
+    setANOpen((prev) => anplacement !== newPlacement || !prev);
+    setANPlacement(newPlacement);
+  };
+
+  const handleClickDD =
+  (newPlacement: PopperPlacementType) =>
+  (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorElDD(event.currentTarget);
+    setDDOpen((prev) => ddplacement !== newPlacement || !prev);
+    setDDPlacement(newPlacement);
+  };
+
+  const handleClick1 = (idx: number) => {
     //@ts-ignore
     const graphToSave = window.graph.save();
     //@ts-ignore
     window.savedGraphs[idx] = JSON.parse(JSON.stringify(graphToSave));
     //@ts-ignore
-    setNode1Groups([...node1groups,{index:idx}])
+    setNode1Groups([...node1groups, { index: idx }])
   }
 
-  const handleClick2 =(idx:number)=>{
-    setNode2Groups([...node2groups,{index:idx}])
+  const handleClick2 = (idx: number) => {
+    setNode2Groups([...node2groups, { index: idx }])
   }
 
-  const handleClick3 =(idx:number)=>{
-    setNode3Groups([...node3groups,{index:idx}])
-  }  
+  const handleClick3 = (idx: number) => {
+    setNode3Groups([...node3groups, { index: idx }])
+  }
 
-  const handleClick4 =(idx:number)=>{
-    setNode4Groups([...node4groups,{index:idx}])
-  }  
+  const handleClick4 = (idx: number) => {
+    setNode4Groups([...node4groups, { index: idx }])
+  }
 
-  const handleDelete1 =(i: number)=>{
+  const handleDelete1 = (i: number) => {
     //@ts-ignore
     delete window.savedGraphs[node1groups[i].index]
     const deleteVal = [...node1groups]
-    deleteVal.splice(i,1)
+    deleteVal.splice(i, 1)
     setNode1Groups(deleteVal)
   }
 
-  const handleDelete2 =(i: number)=>{
+  const handleDelete2 = (i: number) => {
     const deleteVal = [...node2groups]
-    deleteVal.splice(i,1)
+    deleteVal.splice(i, 1)
     setNode2Groups(deleteVal)
   }
 
-  const handleDelete3 =(i: number)=>{
+  const handleDelete3 = (i: number) => {
     const deleteVal = [...node3groups]
-    deleteVal.splice(i,1)
+    deleteVal.splice(i, 1)
     setNode3Groups(deleteVal)
   }
 
-  const handleDelete4 =(i: number)=>{
+  const handleDelete4 = (i: number) => {
     const deleteVal = [...node4groups]
-    deleteVal.splice(i,1)
+    deleteVal.splice(i, 1)
     setNode4Groups(deleteVal)
   }
 
@@ -157,15 +185,20 @@ function App() {
       <Metric>We can add some Evaluations here ...</Metric>
     </Box>
   );
-  
+
 
   return (
     <Grid numCols={1} numColsSm={2} numColsLg={5} className="gap-2">
       <Col numColSpan={1} numColSpanLg={1}>
         <Card>
           <>
-            <Text>General Information</Text>
-            <Metric>We can write some descriptions here ...</Metric>
+            <Typography>
+              <text style={{ color: "grey" }}>General Information</text>
+              <Tooltip title="We can add more tooltips on the graph visualisations here..." placement="right">
+                <HelpOutlineRoundedIcon />
+              </Tooltip>
+            </Typography>
+            <Metric>Groups Panel</Metric>
             <TabList
               defaultValue="1"
               onValueChange={(value) => setShowCard(value)}
@@ -180,20 +213,20 @@ function App() {
           {showCard === "1" ? (
             <List sx={style} component="nav" aria-label="mailbox folders">
               {
-                node1groups.map((val,i)=>
-                <Grid numCols={5} className="gap-2">
-                  <Col numColSpan={4}>
-                  <ListItem button onClick={(e)=>handleChange1(e,i)}>
-                     <ListItemText>
-                         Group {val.index+1}
-                     </ListItemText>
-                   </ListItem>
-                   <Divider/>
-                  </Col>
-                  <Col numColSpan={1}>
-                    <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={()=>handleDelete1(i)}/> 
-                  </Col>
-                </Grid>
+                node1groups.map((val, i) =>
+                  <Grid numCols={5} className="gap-2">
+                    <Col numColSpan={4}>
+                      <ListItem button onClick={(e) => handleChange1(e, i)}>
+                        <ListItemText>
+                          Group {val.index + 1}
+                        </ListItemText>
+                      </ListItem>
+                      <Divider />
+                    </Col>
+                    <Col numColSpan={1}>
+                      <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete1(i)} />
+                    </Col>
+                  </Grid>
                 )
               }
               <ListItem>
@@ -202,30 +235,30 @@ function App() {
                   icon={Add}
                   iconPosition='left'
                   variant="light"
-                  onClick={() => {setCounter1(counter1 + 1);handleClick1(counter1)}}
+                  onClick={() => { setCounter1(counter1 + 1); handleClick1(counter1) }}
                 >
                   Save view
                 </Button>
               </ListItem>
             </List>
-          ) : null }
+          ) : null}
           {showCard === "2" ? (
             <List sx={style} component="nav" aria-label="mailbox folders">
               {
-                node2groups.map((val,i)=>
-                <Grid numCols={5} className="gap-2">
-                  <Col numColSpan={4}>
-                  <ListItem button onClick={(e)=>handleChange2(e,i)}>
-                     <ListItemText>
-                         Group {val.index+1}
-                     </ListItemText>
-                   </ListItem>
-                   <Divider/>
-                  </Col>
-                  <Col numColSpan={1}>
-                    <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={()=>handleDelete2(i)}/> 
-                  </Col>
-                </Grid>
+                node2groups.map((val, i) =>
+                  <Grid numCols={5} className="gap-2">
+                    <Col numColSpan={4}>
+                      <ListItem button onClick={(e) => handleChange2(e, i)}>
+                        <ListItemText>
+                          Group {val.index + 1}
+                        </ListItemText>
+                      </ListItem>
+                      <Divider />
+                    </Col>
+                    <Col numColSpan={1}>
+                      <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete2(i)} />
+                    </Col>
+                  </Grid>
                 )
               }
               <ListItem>
@@ -234,31 +267,31 @@ function App() {
                   icon={Add}
                   iconPosition='left'
                   variant="light"
-                  onClick={() => {setCounter2(counter2 + 1); handleClick2(counter2) }}
+                  onClick={() => { setCounter2(counter2 + 1); handleClick2(counter2) }}
                 >
                   Add Current Selection
                 </Button>
               </ListItem>
               <Divider />
             </List>
-          ) : null }
+          ) : null}
           {showCard === "3" ? (
             <List sx={style} component="nav" aria-label="mailbox folders">
               {
-                node3groups.map((val,i)=>
-                <Grid numCols={5} className="gap-2">
-                  <Col numColSpan={4}>
-                  <ListItem button onClick={(e)=>handleChange3(e,i)}>
-                     <ListItemText>
-                         Group {val.index+1}
-                     </ListItemText>
-                   </ListItem>
-                   <Divider/>
-                  </Col>
-                  <Col numColSpan={1}>
-                    <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={()=>handleDelete3(i)}/> 
-                  </Col>
-                </Grid>
+                node3groups.map((val, i) =>
+                  <Grid numCols={5} className="gap-2">
+                    <Col numColSpan={4}>
+                      <ListItem button onClick={(e) => handleChange3(e, i)}>
+                        <ListItemText>
+                          Group {val.index + 1}
+                        </ListItemText>
+                      </ListItem>
+                      <Divider />
+                    </Col>
+                    <Col numColSpan={1}>
+                      <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete3(i)} />
+                    </Col>
+                  </Grid>
                 )
               }
               <ListItem>
@@ -267,31 +300,31 @@ function App() {
                   icon={Add}
                   iconPosition='left'
                   variant="light"
-                  onClick={() => {setCounter3(counter3 + 1); handleClick3(counter3) }}
+                  onClick={() => { setCounter3(counter3 + 1); handleClick3(counter3) }}
                 >
                   Add Current Selection
                 </Button>
               </ListItem>
               <Divider />
             </List>
-          ) : null }
+          ) : null}
           {showCard === "4" ? (
             <List sx={style} component="nav" aria-label="mailbox folders">
               {
-                node4groups.map((val,i)=>
-                <Grid numCols={5} className="gap-2">
-                  <Col numColSpan={4}>
-                  <ListItem button onClick={(e)=>handleChange4(e,i)}>
-                     <ListItemText>
-                         Group {val.index+1}
-                     </ListItemText>
-                   </ListItem>
-                   <Divider/>
-                  </Col>
-                  <Col numColSpan={1}>
-                    <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={()=>handleDelete4(i)}/> 
-                  </Col>
-                </Grid>
+                node4groups.map((val, i) =>
+                  <Grid numCols={5} className="gap-2">
+                    <Col numColSpan={4}>
+                      <ListItem button onClick={(e) => handleChange4(e, i)}>
+                        <ListItemText>
+                          Group {val.index + 1}
+                        </ListItemText>
+                      </ListItem>
+                      <Divider />
+                    </Col>
+                    <Col numColSpan={1}>
+                      <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete4(i)} />
+                    </Col>
+                  </Grid>
                 )
               }
               <ListItem>
@@ -300,21 +333,26 @@ function App() {
                   icon={Add}
                   iconPosition='left'
                   variant="light"
-                  onClick={() => {setCounter4(counter4 + 1); handleClick4(counter4) }}
+                  onClick={() => { setCounter4(counter4 + 1); handleClick4(counter4) }}
                 >
                   Add Current Selection
                 </Button>
               </ListItem>
               <Divider />
             </List>
-          ) : null }
+          ) : null}
         </Card>
       </Col>
       <Col numColSpan={3}>
         <div>
           <>
-            <Text>General Information</Text>
-            <Metric>We can write some descriptions here ...</Metric>
+            <Typography>
+              <text style={{ color: "grey" }}>General Information</text>
+              <Tooltip title="We can add more tooltips on the panel functionalities here..." placement="right">
+                <HelpOutlineRoundedIcon />
+              </Tooltip>
+            </Typography>
+            <Metric>Graph Visualisation on Vast Challenge 2023</Metric>
             <TabList
               defaultValue="1"
               onValueChange={(value) => setShowGraph(value)}
@@ -325,51 +363,77 @@ function App() {
             </TabList>
           </>
           <div>
-          <div
-            style={{
-              display: showGraph === "1" ? "block" : "none",
-            }}
-          >
-            <iframe scrolling="no" 
-              src="./detailedGraphView.html"
-              width="100%"
-              height="1000px"
-            ></iframe>
+            <div
+              style={{
+                display: showGraph === "1" ? "block" : "none",
+              }}
+            >
+              <Box sx={{ width: 500 }} style={{paddingTop:"8px"}}>
+                <Popper open={anopen} anchorEl={anchorElan} placement={anplacement} transition>
+                  {({ TransitionProps }) => (
+                    <Fade {...TransitionProps} timeout={350}>
+                      <Paper>
+                        <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
+                      </Paper>
+                    </Fade>
+                  )}
+                </Popper>
+                <Button variant="secondary" onClick={handleClickAN('bottom-start')}>Use Tips</Button>
+              </Box>
+              <iframe scrolling="no"
+                src="./detailedGraphView.html"
+                width="100%"
+                height="1000px"
+              ></iframe>
+            </div>
+            <div
+              style={{
+                display: showGraph === "1" ? "none" : "block",
+              }}
+            >
+              <Box sx={{ width: 500 }} style={{paddingTop:"8px", paddingBottom:"8px"}}>
+                <Popper open={ddopen} anchorEl={ddanchorEl} placement={ddplacement} transition>
+                  {({ TransitionProps }) => (
+                    <Fade {...TransitionProps} timeout={350}>
+                      <Paper>
+                        <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
+                      </Paper>
+                    </Fade>
+                  )}
+                </Popper>
+                <Button variant="secondary" onClick={handleClickDD('bottom-start')}>Use Tips</Button>
+              </Box>
+              <iframe src="./cosmos.html" width="100%" height="1000px"></iframe>
+            </div>
           </div>
-          <div
-            style={{
-              display: showGraph === "1" ? "none" : "block",
-            }}
-          >
-            <iframe src="./cosmos.html" width="100%" height="1000px"></iframe>
-          </div>
-        </div>
         </div>
       </Col>
       <Col numColSpan={1}>
-        <Button variant="secondary" size="xl" onClick={toggleDrawer("right", true)}>Evaluation & Explanation</Button> 
+        <div style={{paddingTop:"20px"}}>
+          <Button variant="secondary" size="xl" onClick={toggleDrawer("right", true)}>Evaluation & Explanation</Button>
+        </div>
         <Box sx={{ height: 720, transform: 'translateZ(0px)', flexGrow: 1 }}>
-        <SpeedDial
-          ariaLabel="SpeedDial basic example"
-          sx={{ position: 'absolute', bottom: 16, right: 16 }}
-          icon={<SpeedDialIcon />}
-        >
-          {actions.map((action) => (
-            <SpeedDialAction
-              key={action.name}
-              icon={action.icon}
-              tooltipTitle={action.name}
-            />
-          ))}
-        </SpeedDial>
-        <Drawer
+          <SpeedDial
+            ariaLabel="SpeedDial basic example"
+            sx={{ position: 'absolute', bottom: 16, right: 16 }}
+            icon={<SpeedDialIcon />}
+          >
+            {actions.map((action) => (
+              <SpeedDialAction
+                key={action.name}
+                icon={action.icon}
+                tooltipTitle={action.name}
+              />
+            ))}
+          </SpeedDial>
+          <Drawer
             anchor={"right"}
             open={drawerstate}
             onClose={toggleDrawer("right", false)}
           >
             {list("right")}
-        </Drawer>
-      </Box>
+          </Drawer>
+        </Box>
       </Col>
     </Grid>
 
