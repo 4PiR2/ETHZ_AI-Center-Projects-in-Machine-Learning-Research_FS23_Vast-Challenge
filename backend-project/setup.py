@@ -9,20 +9,20 @@ def read(fname):
 setup(
     name="dummy_server",
     version="0.0.1",
-    description="Backend for the dummy project of the XAI-IML 2023 course.",
+    description="Backend for the dummy project of the 2023 VAST challenge.",
     long_description=read("README.md"),
     package_data={
         "": [
-            "dataset_blobs.csv",
-            "dataset_circles.csv",
-            "dataset_moons.csv",
+            "illegal_ids.json",
+            "user_flag_ids.json",
+            "MC1_preprocessed.json",
         ]
     },
     data_files=[(
         "data", [
-            os.path.join("data", "dataset_blobs.csv"),
-            os.path.join("data", "dataset_circles.csv"),
-            os.path.join("data", "dataset_moons.csv"),
+            "data/illegal_ids.json",
+            "data/user_flag_ids.json",
+            "data/MC1_preprocessed.json",
         ]
     )],
     classifiers=[
