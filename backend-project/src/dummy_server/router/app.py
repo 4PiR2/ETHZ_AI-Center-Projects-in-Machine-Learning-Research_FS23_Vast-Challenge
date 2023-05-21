@@ -1,32 +1,20 @@
 import argparse
-import os
 
 from flask import Flask
 from flask_cors import CORS
 
 from dummy_server.router.routes import add_routes
 
-
 def create_app():
-    app = Flask(__name__)  # static_url_path, static_folder, template_folder...
+    app = Flask(__name__)
     CORS(app, resources={r"/*": {"origins": "*"}})
     add_routes(app)
-
-    @app.route('/version')
-    def version():
-        return f"Job ID: {os.environ['JOB_ID']}\nCommit ID: {os.environ['COMMIT_ID']}"
-
-    @app.route('/dargons')
-    def dargons():
-        return f"There be dragons here!"
-
     return app
 
 
 def start_server():
     parser = argparse.ArgumentParser()
 
-    # API flag
     parser.add_argument(
         "--host",
         default="127.0.0.1",
