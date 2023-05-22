@@ -151,12 +151,40 @@ function findLouvainCommunitiesAndApplyForceClustering(graph) {
     graph.updateLayout(newLayout);
 }
 
+function addComboForSelection(graph) {
+  // Create a new combo
+  const comboId = `combo-${Math.random().toString(36).substr(2, 9)}`; // Create a unique id for the combo
+  graph.addItem('combo', { id: comboId });
+
+  // Get all selected nodes
+  const selectedNodes = graph.findAllByState('node', 'selected');
+
+  // For each selected node, remove it and re-add it with the new comboId
+  selectedNodes.forEach(node => {
+    const nodeData = structuredClone(node.getModel()); // Get node data
+    graph.removeItem(node); // Remove node from graph
+    nodeData.comboId = comboId; // Set the comboId property of the node data to the id of the new combo
+    graph.addItem('node', nodeData); // Re-add node to graph
+  });
+}
+
 function fillEdgesForSelection(graph) {
     const selectedNodes = graph.findAllByState('node', 'selected');
     const nodeIds = new Set(selectedNodes.map(node => node.get('id')));
     const existingEdgeIds = new Set(graph.getEdges().map(edge => edge.getModel().customId))
     const newEdges = data.edges.filter((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target) && !existingEdgeIds.has(edge.customId))
     newEdges.forEach(edge => graph.addItem('edge', augmentEdge(edge)));
+}
+
+function removeEdgesForSelection(graph) {
+    const selectedNodes = graph.findAllByState('node', 'selected');
+    const nodeIds = new Set(selectedNodes.map(node => node.get('id')));
+    graph.getEdges().filter(edge => nodeIds.has(edge.getModel().source) && nodeIds.has(edge.getModel().target)).forEach(id => graph.removeItem(id));
+}
+
+function removeNodesForSelection(graph) {
+    const selectedNodes = graph.findAllByState('node', 'selected');
+    selectedNodes.forEach(node => graph.removeItem(node.get('id')));
 }
 
 function addEdgesForSelection(graph) {
@@ -191,29 +219,36 @@ export const menu = new G6.Menu({
           <li>Expand</li>
           <li>Focus</li>
           <li>Cluster</li>
-          <li>Branch</li>
-          <li>Fill Edges</li>
-        </ul>`
+          <!--<li>Branch</li>-->
+          <li>Show Edges</li>
+          <li>Hide Edges</li>
+          <li>Remove</li>
+          <li>Group</li>
+          </ul>`
       }
-      // TODO: Remove nodes
-      // TODO: Remove edges
-      // TODO: Remove cluster
-      // TODO: Add cluster
       return outDiv
     },
     handleMenuClick(target, item, _) {
       const graph = menu.get("graph");
       if(target.innerHTML === 'Expand') {
         radialExpansionAroundSelection(graph);
+        graph.fitView();
       } else if (target.innerHTML == 'Focus') {
         filterNodesToSelection(graph);
+        graph.fitView();
       } else if (target.innerHTML == 'Cluster') {
         findLouvainCommunitiesAndApplyForceClustering(graph);
-      } else if (target.innerHTML == 'Fill Edges') {
+        graph.fitView();
+      } else if (target.innerHTML == 'Show Edges') {
         fillEdgesForSelection(graph);
+      } else if (target.innerHTML == 'Hide Edges') {
+        removeEdgesForSelection(graph);
+      } else if (target.innerHTML == 'Remove') {
+        removeNodesForSelection(graph);
       } else if (target.innerHTML == 'Branch') {
         addEdgesForSelection(graph);
+      } else if (target.innerHTML == 'Group') {
+        addComboForSelection(graph);
       }
-      graph.fitView();
     },
   });
