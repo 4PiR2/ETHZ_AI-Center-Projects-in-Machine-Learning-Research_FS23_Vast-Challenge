@@ -2,6 +2,26 @@ import {data, idToNode, augmentNode, augmentEdge} from './data.js';
 import suspicion_scores from '../data/suspicion_scores.json';
 import { Algorithm } from './g6.min.js';
 
+import expandIcon from './icons/network.png';
+import focusIcon from './icons/focus.png';
+import clusterIcon from './icons/cluster.png';
+// import branchIcon from './icons/branch.png';
+import showEdgesIcon from './icons/show.png';
+import hideEdgesIcon from './icons/hide.png';
+import removeIcon from './icons/remove.png';
+import groupIcon from './icons/group.png';
+
+const menuItems = [
+  { text: 'Expand', icon: expandIcon },
+  { text: 'Focus', icon: focusIcon },
+  { text: 'Cluster', icon: clusterIcon },
+  // { text: 'Branch', icon: branchIcon },
+  { text: 'Show Edges', icon: showEdgesIcon },
+  { text: 'Hide Edges', icon: hideEdgesIcon },
+  { text: 'Remove', icon: removeIcon },
+  { text: 'Group', icon: groupIcon },
+];
+
 function radialExpansionAroundSelection(graph) {
     const selectedNodes = graph.findAllByState('node', 'selected');
     if (selectedNodes.length == 0) {
@@ -215,16 +235,13 @@ export const menu = new G6.Menu({
       if (graph.findAllByState('node', 'selected').length == 0) {
         outDiv.innerHTML = `To apply node operations,<br> first select some nodes.`
       } else {
-        outDiv.innerHTML = `<ul>
-          <li>Expand</li>
-          <li>Focus</li>
-          <li>Cluster</li>
-          <!--<li>Branch</li>-->
-          <li>Show Edges</li>
-          <li>Hide Edges</li>
-          <li>Remove</li>
-          <li>Group</li>
-          </ul>`
+        outDiv.innerHTML = `<ul id="contextMenu">
+        </ul>`
+        menuItems.forEach(item => {
+          const listItem = document.createElement('li');
+          listItem.innerHTML = `<img src="${item.icon}" alt="${item.text} logo">${item.text}`;
+          outDiv.appendChild(listItem);
+        });
       }
       return outDiv
     },
