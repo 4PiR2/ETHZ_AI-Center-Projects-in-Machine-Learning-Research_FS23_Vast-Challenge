@@ -1,4 +1,4 @@
-#contextMenu {
+#contextMenu, #contextMenuCombo {
   list-style-type: none;
   background-color: rgba(255, 255, 255, 0.9);
   /* border: 1px solid #e2e2e2; */
@@ -11,7 +11,7 @@
   /* border-radius: 8px; */
 }
 
-#contextMenu li {
+#contextMenu li, #contextMenuCombo li {
   cursor: pointer;
   align-items: center;
   /* margin: 0; */
@@ -25,18 +25,18 @@
   padding: 10px 15px;
 }
 
-#contextMenu li:hover {
+#contextMenu li:hover, #contextMenuCombo li:hover {
   color: #aaa;
   background-color: #f9f9f9;
 }
 
-#contextMenu img {
+#contextMenu img, #contextMenuCombo img {
   padding: 0px 10px 0px 0px;
   width: 24px;
   height: 24px;
   /* border-radius: 50%; */
 }
-#contextMenu ul {
+#contextMenu ul, #contextMenuCombo ul {
     padding: 0px;
     margin: 0px;
 }
@@ -46,11 +46,11 @@
   height: 100%;
 }
 
-#contextMenuCombo {
+/* #contextMenuCombo {
   display: none;
   position: absolute;
   z-index: 1000;
   background: white;
   border: 1px solid black;
   padding: 10px;
-}
+} */

@@ -62,6 +62,7 @@ graph.on('combo:contextmenu', (evt) => {
 document.addEventListener('click', () => {
   let contextMenu = document.getElementById('contextMenuCombo');
   if (contextMenu) {
+    console.log("display style set to none")
     contextMenu.style.display = 'none';
   }
 });

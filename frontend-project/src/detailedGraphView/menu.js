@@ -235,8 +235,8 @@ export const menu = new G6.Menu({
       if (graph.findAllByState('node', 'selected').length == 0) {
         outDiv.innerHTML = `To apply node operations,<br> first select some nodes.`
       } else {
-        outDiv.innerHTML = `<ul id="contextMenu">
-        </ul>`
+        // outDiv.innerHTML = `<ul id="contextMenu">
+        // </ul>`
         menuItems.forEach(item => {
           const listItem = document.createElement('li');
           listItem.innerHTML = `<img src="${item.icon}" alt="${item.text} logo">${item.text}`;
@@ -247,8 +247,6 @@ export const menu = new G6.Menu({
     },
     handleMenuClick(target, item, _) {
       const graph = menu.get("graph");
-      console.log("target.innerHTML.alt", target.alt)
-      console.log("target.innerHTML.alt", target.innerHTML)
       function isType(str) {
         return target.innerHTML.includes(str) || (target.alt != undefined && target.alt.includes(str))
       }
@@ -271,6 +269,7 @@ export const menu = new G6.Menu({
         addEdgesForSelection(graph);
       } else if (isType('Group')) {
         addComboForSelection(graph);
+        graph.fitView();
       }
     },
   });
