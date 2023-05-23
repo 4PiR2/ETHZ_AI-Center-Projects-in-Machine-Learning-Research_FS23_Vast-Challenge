@@ -247,24 +247,29 @@ export const menu = new G6.Menu({
     },
     handleMenuClick(target, item, _) {
       const graph = menu.get("graph");
-      if(target.innerHTML === 'Expand') {
+      console.log("target.innerHTML.alt", target.alt)
+      console.log("target.innerHTML.alt", target.innerHTML)
+      function isType(str) {
+        return target.innerHTML.includes(str) || (target.alt != undefined && target.alt.includes(str))
+      }
+      if(isType('Expand')) {
         radialExpansionAroundSelection(graph);
         graph.fitView();
-      } else if (target.innerHTML == 'Focus') {
+      } else if (isType('Focus')) {
         filterNodesToSelection(graph);
         graph.fitView();
-      } else if (target.innerHTML == 'Cluster') {
+      } else if (isType('Cluster')) {
         findLouvainCommunitiesAndApplyForceClustering(graph);
         graph.fitView();
-      } else if (target.innerHTML == 'Show Edges') {
+      } else if (isType('Show Edges')) {
         fillEdgesForSelection(graph);
-      } else if (target.innerHTML == 'Hide Edges') {
+      } else if (isType('Hide Edges')) {
         removeEdgesForSelection(graph);
-      } else if (target.innerHTML == 'Remove') {
+      } else if (isType('Remove')) {
         removeNodesForSelection(graph);
-      } else if (target.innerHTML == 'Branch') {
+      } else if (isType('Branch')) {
         addEdgesForSelection(graph);
-      } else if (target.innerHTML == 'Group') {
+      } else if (isType('Group')) {
         addComboForSelection(graph);
       }
     },
