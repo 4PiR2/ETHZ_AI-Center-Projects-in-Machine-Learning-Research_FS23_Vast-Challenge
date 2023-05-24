@@ -1,7 +1,8 @@
 from flask_restful import Api
-from flask import request
+from flask import request, jsonify
 from dummy_server.resources.calculate_scores import get_scores
 from dummy_server.resources.get_data import get_graph, get_illegal_nodes, get_user_flags, add_user_flag, add_illegal_node
+from dummy_server.resources.cluster import embed_and_cluster, compute_subgraph, calculate_centrality
 
 def add_routes(app):
     api = Api(app)
@@ -49,6 +50,49 @@ def add_routes(app):
         else:
             return jsonify({"error": "No new_flag provided"}), 400
 
+    @app.route('/api/v1/calculate_centrality', methods=['POST'])
+    def calculate_centrality_endpoint():
+        data = request.get_json()
+        graph_dict = data.get('graph')
+        method = data.get('method', 'degree')
+        if graph_dict is not None:
+            try:
+                centrality = calculate_centrality(graph_dict, method)
+                return jsonify(centrality), 200
+            except ValueError as e:
+                return jsonify({"error": str(e)}), 400
+        else:
+            return jsonify({"error": "graph is required"}), 400
+
+    @app.route('/api/v1/compute_subgraph', methods=['POST'])
+    def compute_subgraph_endpoint():
+        data = request.get_json()
+        graph_dict = data.get('graph')
+        nodes = data.get('nodes')
+        method = data.get('method', 'louvain')
+        if graph_dict is not None and nodes is not None:
+            try:
+                subgraph = compute_subgraph(graph_dict, nodes, method)
+                return jsonify(subgraph), 200
+            except ValueError as e:
+                return jsonify({"error": str(e)}), 400
+        else:
+            return jsonify({"error": "graph and nodes are required"}), 400
+
+    @app.route('/api/v1/embed_and_cluster', methods=['POST'])
+    def embed_and_cluster_endpoint():
+        data = request.get_json()
+        graph_dict = data.get('graph')
+        n_components = data.get('n_components', 3)
+        n_clusters = data.get('n_clusters', 3)
+        if graph_dict is not None:
+            try:
+                node_labels = embed_and_cluster(graph_dict, n_components, n_clusters)
+                return jsonify(node_labels), 200
+            except Exception as e:
+                return jsonify({"error": str(e)}), 400
+        else:
+            return jsonify({"error": "graph is required"}), 400
 
     return api
 

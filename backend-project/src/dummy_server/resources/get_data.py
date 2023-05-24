@@ -18,6 +18,12 @@ def write_json(file_path, data):
     with open(file_path, 'w') as f:
         json.dump(data, f, indent=4)
 
+def get_illegal_nodes():
+    return load_json("data/illegal_ids.json")
+
+def get_user_flags():
+    return load_json("data/user_flag_ids.json")
+
 def add_illegal_node(new_node):
     illegal_nodes = load_json("data/illegal_ids.json")
     if new_node not in illegal_nodes:
