@@ -14,12 +14,13 @@ import nodeIconLocation from './icons/location.png';
 import nodeIconFisheye from './icons/fisheye.png';
 import nodeIconEvent from './icons/event.png';
 import nodeIconCompany from './icons/company.png';
+import nodeIconTip from './icons/rhombus.png';
 
 export const data = d;
 
 export const idToNode = Object.fromEntries( data.nodes.map( x => [x.id, x]) );
 
-const iconMapping = {
+export const iconMapping = {
   'unknown': nodeIconUnknown,
   'vessel': nodeIconVessel,
   'political_organization': nodeIconPoliticalOrganization,
@@ -30,36 +31,40 @@ const iconMapping = {
   'fisheye': nodeIconFisheye,
   'event': nodeIconEvent,
   'company': nodeIconCompany,
+  'tip': nodeIconTip,
   // add other icon mappings as needed
 };
 
 export const typeToStroke = {
-    'ownership': '#BBB09B',
-    'partnership': '#543654',
-    'family_relationship': '#A5C23A',
-    'membership': '#E26D5A',
+    'ownership': '#56B4E9',
+    'partnership': '#009E73',
+    'family_relationship': '#A05213',
+    'membership': '#0072B2',
 }
 
 export function augmentNode(node) {
     suspicion_score = suspicion_scores[node.id];
     // Create a custom color scale using d3-scale
     const colorScale = scaleLinear()
-    .domain([0, 0.5, 1])
-    .range(['green', 'yellow', 'red']);
+    .domain([0, 1])
+    .range(['white', 'red']);
     let type = node.type ?? "unknown"
     if (node.id == FISHEYE_ID) {
         type = "fisheye"
     }
     const fill = colorScale(suspicion_score);
     let shape = 'circle';
+    let size = 30;
     if (targetIDs.includes(node.id)) {
         shape = 'diamond'
+        size = 50
     } else if (node.id == FISHEYE_ID) {
         shape = 'star'
     }
     const augmentedNode = {
         ...node,
-        legendType: 'type1',
+        typeSemantic: node.type,
+        size: size,
         style: {
             fill: fill,
         },
@@ -87,6 +92,7 @@ export function augmentEdge(edge) {
         target: edge.target,
         key: edge.key,
         customId: edge.customId,
+        typeSemantic: edge.type,
         // label: edge.type[0].toUpperCase(),
         // labelCfg: {
         //     style: {

@@ -4,6 +4,7 @@ import {legend} from './legend.js';
 import {tooltip} from './tooltip.js';
 import {showContextMenu} from './comboMenu.js';
 import {data, augmentEdge} from './data.js';
+import {createLegend} from './newLegend.js';
 
 const graph = new G6.Graph({
   container: 'container',
@@ -39,7 +40,7 @@ const graph = new G6.Graph({
       lineWidth: 2,
     },
   },
-  plugins: [menu, tooltip, legend]
+  plugins: [menu, tooltip]
 });
 
 function main() {
@@ -96,4 +97,5 @@ graph.on('node:mouseleave', (evt) => {
   }
 });
 
+createLegend();
 main();
