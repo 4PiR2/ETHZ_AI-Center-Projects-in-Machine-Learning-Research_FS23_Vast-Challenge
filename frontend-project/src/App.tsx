@@ -27,6 +27,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { Callout } from "@tremor/react";
+import { TextInput } from "@tremor/react";
+import {
+  Accordion,
+  AccordionHeader,
+  AccordionBody,
+} from "@tremor/react";
 
 import {
   TabList,
@@ -100,6 +106,7 @@ function App() {
   const [showGraph, setShowGraph] = useState("1");
   const [counter, setCounter] = useState(1);
   const [nodegroups, setNodeGroups] = useState([{ index: 0 }]);
+  const [suspiciongroups, setSuspicionGroups] = useState([{ index: 0 }]);
 
   const [drawerstate, setDrawerState] = useState(false);
   const [anchorElan, setAnchorElAN] = useState<HTMLButtonElement | null>(null);
@@ -108,7 +115,6 @@ function App() {
   const [ddanchorEl, setAnchorElDD] = useState<HTMLButtonElement | null>(null);
   const [ddopen, setDDOpen] = useState(false);
   const [ddplacement, setDDPlacement] = useState<PopperPlacementType>();
-
   const [opendialog, setOpenDialog] = useState(false);
 
 
@@ -125,7 +131,7 @@ function App() {
         setDrawerState(open);
       };
 
-  const handleChange1 = (e: any, i: number) => {
+  const handleChange = (e: any, i: number) => {
     //@ts-ignore
     const savedGraph = window.savedGraphs[nodegroups[i].index];
     //@ts-ignore
@@ -136,6 +142,10 @@ function App() {
     graph.fitView();
     const onchangeVal = [...nodegroups]
     setNodeGroups(onchangeVal)
+  }
+
+  const handleSusChange = (e: any, i: number) => {
+
   }
 
   const handleClickAN =
@@ -171,12 +181,6 @@ function App() {
     setNodeGroups(deleteVal)
   }
 
-  const handleClickOpenDialog = () => {
-    setOpenDialog(true);
-  };
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
 
 
   const list = (anchor: "right") => (
@@ -195,13 +199,21 @@ function App() {
   return (
     <div>
       <BootstrapDialog
-        onClose={handleCloseDialog}
+        onClose={() => { setOpenDialog(false) }}
         aria-labelledby="customized-dialog-title"
         open={opendialog}
       >
-        <BootstrapDialogTitle id="customized-dialog-title" onClose={handleCloseDialog}>
+        <BootstrapDialogTitle id="customized-dialog-title" onClose={() => { setOpenDialog(false) }}>
           Name your Choice!
         </BootstrapDialogTitle>
+        <Box
+          component="form"
+          sx={{ '& > :not(style)': { m: 1, width: '30ch' }, }}
+          noValidate
+          autoComplete="off"
+        >
+          <TextInput id="standard-basic" />
+        </Box>
         <DialogContent dividers>
           <Typography gutterBottom>
             Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
@@ -218,16 +230,16 @@ function App() {
             ullamcorper nulla non metus auctor fringilla.
           </Typography>
           <Callout
-        className="mt-4"
-        title="No critical system data"
-        icon={CheckCircleRounded}
-        color="teal"
-      >
-        All systems are currently within their default operating ranges.
-      </Callout>
+            className="mt-4"
+            title="No critical system data"
+            icon={CheckCircleRounded}
+            color="teal"
+          >
+            All systems are currently within their default operating ranges.
+          </Callout>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus variant="secondary" size="lg" onClick={()=>{setCounter(counter + 1); handleClick(counter); setOpenDialog(false)}}>
+          <Button autoFocus variant="secondary" size="lg" onClick={() => { setCounter(counter + 1); handleClick(counter); setOpenDialog(false) }}>
             Save changes
           </Button>
         </DialogActions>
@@ -249,7 +261,7 @@ function App() {
                 nodegroups.map((val, i) =>
                   <Grid numCols={5} className="gap-2">
                     <Col numColSpan={4}>
-                      <ListItem button onClick={(e) => handleChange1(e, i)}>
+                      <ListItem button onClick={(e) => handleChange(e, i)}>
                         <ListItemText>
                           Group {val.index + 1}
                         </ListItemText>
@@ -268,13 +280,35 @@ function App() {
                   icon={Add}
                   iconPosition='left'
                   variant="light"
-                  onClick={handleClickOpenDialog}
+                  onClick={() => { setOpenDialog(true) }}
                 >
                   Save view
                 </Button>
               </ListItem>
             </List>
           </Card>
+          <div style={{ padding: "5px" }}></div>
+          <Accordion>
+            <AccordionHeader>
+              Suspicion Suggestions
+            </AccordionHeader>
+            <AccordionBody>
+              <List sx={style} component="nav" aria-label="mailbox folders">
+                {
+                  suspiciongroups.map((val, i) =>
+                    <Grid className="gap-2">
+                        <ListItem button onClick={(e) => handleSusChange(e, i)}>
+                            {
+                              val.index < 4 ? <ListItemText> Node {val.index + 1} </ListItemText> : <ListItemText> Suspicion Node {val.index -3} </ListItemText>
+                            } 
+                        </ListItem>
+                        <Divider />
+                    </Grid>
+                  )
+                }
+              </List>
+            </AccordionBody>
+          </Accordion>
         </Col>
         <Col numColSpan={3}>
           <div>
