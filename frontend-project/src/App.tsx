@@ -19,6 +19,14 @@ import Tooltip from '@mui/material/Tooltip';
 import Popper, { PopperPlacementType } from '@mui/material/Popper';
 import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
+import { styled } from '@mui/material/styles';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import { Callout } from "@tremor/react";
 
 import {
   TabList,
@@ -29,11 +37,50 @@ import {
 } from "@tremor/react";
 
 import { useState } from "react";
-import { Add, DeleteOutlineRounded } from '@mui/icons-material';
+import { Add, CheckCircleRounded, DeleteOutlineRounded } from '@mui/icons-material';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 
 //@ts-ignore
 window.savedGraphs = {};
+
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialogContent-root': {
+    padding: theme.spacing(2),
+  },
+  '& .MuiDialogActions-root': {
+    padding: theme.spacing(1),
+  },
+}));
+
+export interface DialogTitleProps {
+  id: string;
+  children?: React.ReactNode;
+  onClose: () => void;
+}
+
+function BootstrapDialogTitle(props: DialogTitleProps) {
+  const { children, onClose, ...other } = props;
+
+  return (
+    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
+      {children}
+      {onClose ? (
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      ) : null}
+    </DialogTitle>
+  );
+}
 
 function App() {
 
@@ -50,16 +97,9 @@ function App() {
   };
 
 
-  const [showCard, setShowCard] = useState("1");
   const [showGraph, setShowGraph] = useState("1");
-  const [counter1, setCounter1] = useState(1);
-  const [counter2, setCounter2] = useState(1);
-  const [counter3, setCounter3] = useState(1);
-  const [counter4, setCounter4] = useState(1);
-  const [node1groups, setNode1Groups] = useState([{ index: 0 }]);
-  const [node2groups, setNode2Groups] = useState([{ index: 0 }]);
-  const [node3groups, setNode3Groups] = useState([{ index: 0 }]);
-  const [node4groups, setNode4Groups] = useState([{ index: 0 }]);
+  const [counter, setCounter] = useState(1);
+  const [nodegroups, setNodeGroups] = useState([{ index: 0 }]);
 
   const [drawerstate, setDrawerState] = useState(false);
   const [anchorElan, setAnchorElAN] = useState<HTMLButtonElement | null>(null);
@@ -68,6 +108,8 @@ function App() {
   const [ddanchorEl, setAnchorElDD] = useState<HTMLButtonElement | null>(null);
   const [ddopen, setDDOpen] = useState(false);
   const [ddplacement, setDDPlacement] = useState<PopperPlacementType>();
+
+  const [opendialog, setOpenDialog] = useState(false);
 
 
   const toggleDrawer =
@@ -85,94 +127,57 @@ function App() {
 
   const handleChange1 = (e: any, i: number) => {
     //@ts-ignore
-    const savedGraph = window.savedGraphs[node1groups[i].index];
+    const savedGraph = window.savedGraphs[nodegroups[i].index];
     //@ts-ignore
     graph.destroyLayout();
     //@ts-ignore
     window.graph.read(JSON.parse(JSON.stringify(savedGraph)));
     //@ts-ignore
     graph.fitView();
-    const onchangeVal = [...node1groups]
-    setNode1Groups(onchangeVal)
-  }
-
-  const handleChange2 = (e: any, i: number) => {
-    const onchangeVal = [...node2groups]
-    setNode2Groups(onchangeVal)
-  }
-
-  const handleChange3 = (e: any, i: number) => {
-    const onchangeVal = [...node3groups]
-    setNode3Groups(onchangeVal)
-  }
-
-  const handleChange4 = (e: any, i: number) => {
-    const onchangeVal = [...node4groups]
-    setNode4Groups(onchangeVal)
+    const onchangeVal = [...nodegroups]
+    setNodeGroups(onchangeVal)
   }
 
   const handleClickAN =
-  (newPlacement: PopperPlacementType) =>
-  (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorElAN(event.currentTarget);
-    setANOpen((prev) => anplacement !== newPlacement || !prev);
-    setANPlacement(newPlacement);
-  };
+    (newPlacement: PopperPlacementType) =>
+      (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorElAN(event.currentTarget);
+        setANOpen((prev) => anplacement !== newPlacement || !prev);
+        setANPlacement(newPlacement);
+      };
 
   const handleClickDD =
-  (newPlacement: PopperPlacementType) =>
-  (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorElDD(event.currentTarget);
-    setDDOpen((prev) => ddplacement !== newPlacement || !prev);
-    setDDPlacement(newPlacement);
-  };
+    (newPlacement: PopperPlacementType) =>
+      (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorElDD(event.currentTarget);
+        setDDOpen((prev) => ddplacement !== newPlacement || !prev);
+        setDDPlacement(newPlacement);
+      };
 
-  const handleClick1 = (idx: number) => {
+  const handleClick = (idx: number) => {
     //@ts-ignore
     const graphToSave = window.graph.save();
     //@ts-ignore
     window.savedGraphs[idx] = JSON.parse(JSON.stringify(graphToSave));
     //@ts-ignore
-    setNode1Groups([...node1groups, { index: idx }])
+    setNodeGroups([...nodegroups, { index: idx }]);
   }
 
-  const handleClick2 = (idx: number) => {
-    setNode2Groups([...node2groups, { index: idx }])
-  }
-
-  const handleClick3 = (idx: number) => {
-    setNode3Groups([...node3groups, { index: idx }])
-  }
-
-  const handleClick4 = (idx: number) => {
-    setNode4Groups([...node4groups, { index: idx }])
-  }
-
-  const handleDelete1 = (i: number) => {
+  const handleDelete = (i: number) => {
     //@ts-ignore
-    delete window.savedGraphs[node1groups[i].index]
-    const deleteVal = [...node1groups]
+    delete window.savedGraphs[nodegroups[i].index]
+    const deleteVal = [...nodegroups]
     deleteVal.splice(i, 1)
-    setNode1Groups(deleteVal)
+    setNodeGroups(deleteVal)
   }
 
-  const handleDelete2 = (i: number) => {
-    const deleteVal = [...node2groups]
-    deleteVal.splice(i, 1)
-    setNode2Groups(deleteVal)
-  }
+  const handleClickOpenDialog = () => {
+    setOpenDialog(true);
+  };
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
 
-  const handleDelete3 = (i: number) => {
-    const deleteVal = [...node3groups]
-    deleteVal.splice(i, 1)
-    setNode3Groups(deleteVal)
-  }
-
-  const handleDelete4 = (i: number) => {
-    const deleteVal = [...node4groups]
-    deleteVal.splice(i, 1)
-    setNode4Groups(deleteVal)
-  }
 
   const list = (anchor: "right") => (
     <Box
@@ -188,32 +193,60 @@ function App() {
 
 
   return (
-    <Grid numCols={1} numColsSm={2} numColsLg={5} className="gap-2">
-      <Col numColSpan={1} numColSpanLg={1}>
-        <Card>
-          <>
-            <Typography>
-              <text style={{ color: "grey" }}>General Information</text>
-              <Tooltip title="We can add more tooltips on the graph visualisations here..." placement="right">
-                <HelpOutlineRoundedIcon />
-              </Tooltip>
-            </Typography>
-            <Metric>Groups Panel</Metric>
-            <TabList
-              defaultValue="1"
-              onValueChange={(value) => setShowCard(value)}
-              className="mt-6"
-            >
-              <Tab value="1" text="Node 1" />
-              <Tab value="2" text="Node 2" />
-              <Tab value="3" text="Node 3" />
-              <Tab value="4" text="Node 4" />
-            </TabList>
-          </>
-          {showCard === "1" ? (
+    <div>
+      <BootstrapDialog
+        onClose={handleCloseDialog}
+        aria-labelledby="customized-dialog-title"
+        open={opendialog}
+      >
+        <BootstrapDialogTitle id="customized-dialog-title" onClose={handleCloseDialog}>
+          Name your Choice!
+        </BootstrapDialogTitle>
+        <DialogContent dividers>
+          <Typography gutterBottom>
+            Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
+            dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta ac
+            consectetur ac, vestibulum at eros.
+          </Typography>
+          <Typography gutterBottom>
+            Praesent commodo cursus magna, vel scelerisque nisl consectetur et.
+            Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
+          </Typography>
+          <Typography gutterBottom>
+            Aenean lacinia bibendum nulla sed consectetur. Praesent commodo cursus
+            magna, vel scelerisque nisl consectetur et. Donec sed odio dui. Donec
+            ullamcorper nulla non metus auctor fringilla.
+          </Typography>
+          <Callout
+        className="mt-4"
+        title="No critical system data"
+        icon={CheckCircleRounded}
+        color="teal"
+      >
+        All systems are currently within their default operating ranges.
+      </Callout>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus variant="secondary" size="lg" onClick={()=>{setCounter(counter + 1); handleClick(counter); setOpenDialog(false)}}>
+            Save changes
+          </Button>
+        </DialogActions>
+      </BootstrapDialog>
+      <Grid numCols={1} numColsSm={2} numColsLg={5} className="gap-2">
+        <Col numColSpan={1} numColSpanLg={1}>
+          <Card>
+            <>
+              <Typography>
+                <text style={{ color: "grey" }}>General Information</text>
+                <Tooltip title="We can add more tooltips on the graph visualisations here..." placement="right">
+                  <HelpOutlineRoundedIcon />
+                </Tooltip>
+              </Typography>
+              <Metric>Groups Panel</Metric>
+            </>
             <List sx={style} component="nav" aria-label="mailbox folders">
               {
-                node1groups.map((val, i) =>
+                nodegroups.map((val, i) =>
                   <Grid numCols={5} className="gap-2">
                     <Col numColSpan={4}>
                       <ListItem button onClick={(e) => handleChange1(e, i)}>
@@ -224,7 +257,7 @@ function App() {
                       <Divider />
                     </Col>
                     <Col numColSpan={1}>
-                      <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete1(i)} />
+                      <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete(i)} />
                     </Col>
                   </Grid>
                 )
@@ -235,209 +268,108 @@ function App() {
                   icon={Add}
                   iconPosition='left'
                   variant="light"
-                  onClick={() => { setCounter1(counter1 + 1); handleClick1(counter1) }}
+                  onClick={handleClickOpenDialog}
                 >
                   Save view
                 </Button>
               </ListItem>
             </List>
-          ) : null}
-          {showCard === "2" ? (
-            <List sx={style} component="nav" aria-label="mailbox folders">
-              {
-                node2groups.map((val, i) =>
-                  <Grid numCols={5} className="gap-2">
-                    <Col numColSpan={4}>
-                      <ListItem button onClick={(e) => handleChange2(e, i)}>
-                        <ListItemText>
-                          Group {val.index + 1}
-                        </ListItemText>
-                      </ListItem>
-                      <Divider />
-                    </Col>
-                    <Col numColSpan={1}>
-                      <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete2(i)} />
-                    </Col>
-                  </Grid>
-                )
-              }
-              <ListItem>
-                <Button
-                  size="lg"
-                  icon={Add}
-                  iconPosition='left'
-                  variant="light"
-                  onClick={() => { setCounter2(counter2 + 1); handleClick2(counter2) }}
-                >
-                  Add Current Selection
-                </Button>
-              </ListItem>
-              <Divider />
-            </List>
-          ) : null}
-          {showCard === "3" ? (
-            <List sx={style} component="nav" aria-label="mailbox folders">
-              {
-                node3groups.map((val, i) =>
-                  <Grid numCols={5} className="gap-2">
-                    <Col numColSpan={4}>
-                      <ListItem button onClick={(e) => handleChange3(e, i)}>
-                        <ListItemText>
-                          Group {val.index + 1}
-                        </ListItemText>
-                      </ListItem>
-                      <Divider />
-                    </Col>
-                    <Col numColSpan={1}>
-                      <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete3(i)} />
-                    </Col>
-                  </Grid>
-                )
-              }
-              <ListItem>
-                <Button
-                  size="lg"
-                  icon={Add}
-                  iconPosition='left'
-                  variant="light"
-                  onClick={() => { setCounter3(counter3 + 1); handleClick3(counter3) }}
-                >
-                  Add Current Selection
-                </Button>
-              </ListItem>
-              <Divider />
-            </List>
-          ) : null}
-          {showCard === "4" ? (
-            <List sx={style} component="nav" aria-label="mailbox folders">
-              {
-                node4groups.map((val, i) =>
-                  <Grid numCols={5} className="gap-2">
-                    <Col numColSpan={4}>
-                      <ListItem button onClick={(e) => handleChange4(e, i)}>
-                        <ListItemText>
-                          Group {val.index + 1}
-                        </ListItemText>
-                      </ListItem>
-                      <Divider />
-                    </Col>
-                    <Col numColSpan={1}>
-                      <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete4(i)} />
-                    </Col>
-                  </Grid>
-                )
-              }
-              <ListItem>
-                <Button
-                  size="lg"
-                  icon={Add}
-                  iconPosition='left'
-                  variant="light"
-                  onClick={() => { setCounter4(counter4 + 1); handleClick4(counter4) }}
-                >
-                  Add Current Selection
-                </Button>
-              </ListItem>
-              <Divider />
-            </List>
-          ) : null}
-        </Card>
-      </Col>
-      <Col numColSpan={3}>
-        <div>
-          <>
-            <Typography>
-              <text style={{ color: "grey" }}>General Information</text>
-              <Tooltip title="We can add more tooltips on the panel functionalities here..." placement="right">
-                <HelpOutlineRoundedIcon />
-              </Tooltip>
-            </Typography>
-            <Metric>Graph Visualisation on Vast Challenge 2023</Metric>
-            <TabList
-              defaultValue="1"
-              onValueChange={(value) => setShowGraph(value)}
-              className="mt-6"
-            >
-              <Tab value="1" text="Detailed" />
-              <Tab value="2" text="Overview" />
-            </TabList>
-          </>
+          </Card>
+        </Col>
+        <Col numColSpan={3}>
           <div>
-            <div
-              style={{
-                display: showGraph === "1" ? "block" : "none",
-              }}
-            >
-              <Box sx={{ width: 500 }} style={{paddingTop:"8px"}}>
-                <Popper open={anopen} anchorEl={anchorElan} placement={anplacement} transition>
-                  {({ TransitionProps }) => (
-                    <Fade {...TransitionProps} timeout={350}>
-                      <Paper>
-                        <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
-                      </Paper>
-                    </Fade>
-                  )}
-                </Popper>
-                <Button variant="secondary" onClick={handleClickAN('bottom-start')}>Use Tips</Button>
-              </Box>
-              <iframe scrolling="no"
-                src="./detailedGraphView.html"
-                width="100%"
-                height="1000px"
-              ></iframe>
-            </div>
-            <div
-              style={{
-                display: showGraph === "1" ? "none" : "block",
-              }}
-            >
-              <Box sx={{ width: 500 }} style={{paddingTop:"8px", paddingBottom:"8px"}}>
-                <Popper open={ddopen} anchorEl={ddanchorEl} placement={ddplacement} transition>
-                  {({ TransitionProps }) => (
-                    <Fade {...TransitionProps} timeout={350}>
-                      <Paper>
-                        <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
-                      </Paper>
-                    </Fade>
-                  )}
-                </Popper>
-                <Button variant="secondary" onClick={handleClickDD('bottom-start')}>Use Tips</Button>
-              </Box>
-              <iframe src="./cosmos.html" width="100%" height="1000px"></iframe>
+            <>
+              <Typography>
+                <text style={{ color: "grey" }}>General Information</text>
+                <Tooltip title="We can add more tooltips on the panel functionalities here..." placement="right">
+                  <HelpOutlineRoundedIcon />
+                </Tooltip>
+              </Typography>
+              <Metric>Graph Visualisation on Vast Challenge 2023</Metric>
+              <TabList
+                defaultValue="1"
+                onValueChange={(value) => setShowGraph(value)}
+                className="mt-6"
+              >
+                <Tab value="1" text="Detailed" />
+                <Tab value="2" text="Overview" />
+              </TabList>
+            </>
+            <div>
+              <div
+                style={{
+                  display: showGraph === "1" ? "block" : "none",
+                }}
+              >
+                <Box sx={{ width: 500 }} style={{ paddingTop: "8px" }}>
+                  <Popper open={anopen} anchorEl={anchorElan} placement={anplacement} transition>
+                    {({ TransitionProps }) => (
+                      <Fade {...TransitionProps} timeout={350}>
+                        <Paper>
+                          <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
+                        </Paper>
+                      </Fade>
+                    )}
+                  </Popper>
+                  <Button variant="secondary" onClick={handleClickAN('bottom-start')}>Use Tips</Button>
+                </Box>
+                <iframe scrolling="no"
+                  src="./detailedGraphView.html"
+                  width="100%"
+                  height="1000px"
+                ></iframe>
+              </div>
+              <div
+                style={{
+                  display: showGraph === "1" ? "none" : "block",
+                }}
+              >
+                <Box sx={{ width: 500 }} style={{ paddingTop: "8px", paddingBottom: "8px" }}>
+                  <Popper open={ddopen} anchorEl={ddanchorEl} placement={ddplacement} transition>
+                    {({ TransitionProps }) => (
+                      <Fade {...TransitionProps} timeout={350}>
+                        <Paper>
+                          <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
+                        </Paper>
+                      </Fade>
+                    )}
+                  </Popper>
+                  <Button variant="secondary" onClick={handleClickDD('bottom-start')}>Use Tips</Button>
+                </Box>
+                <iframe src="./cosmos.html" width="100%" height="1000px"></iframe>
+              </div>
             </div>
           </div>
-        </div>
-      </Col>
-      <Col numColSpan={1}>
-        <div style={{paddingTop:"20px"}}>
-          <Button variant="secondary" size="xl" onClick={toggleDrawer("right", true)}>Evaluation & Explanation</Button>
-        </div>
-        <Box sx={{ height: 720, transform: 'translateZ(0px)', flexGrow: 1 }}>
-          <SpeedDial
-            ariaLabel="SpeedDial basic example"
-            sx={{ position: 'absolute', bottom: 16, right: 16 }}
-            icon={<SpeedDialIcon />}
-          >
-            {actions.map((action) => (
-              <SpeedDialAction
-                key={action.name}
-                icon={action.icon}
-                tooltipTitle={action.name}
-              />
-            ))}
-          </SpeedDial>
-          <Drawer
-            anchor={"right"}
-            open={drawerstate}
-            onClose={toggleDrawer("right", false)}
-          >
-            {list("right")}
-          </Drawer>
-        </Box>
-      </Col>
-    </Grid>
-
-
+        </Col>
+        <Col numColSpan={1}>
+          <div style={{ paddingTop: "20px" }}>
+            <Button variant="secondary" size="xl" onClick={toggleDrawer("right", true)}>Evaluation & Explanation</Button>
+          </div>
+          <Box sx={{ height: 720, transform: 'translateZ(0px)', flexGrow: 1 }}>
+            <SpeedDial
+              ariaLabel="SpeedDial basic example"
+              sx={{ position: 'absolute', bottom: 16, right: 16 }}
+              icon={<SpeedDialIcon />}
+            >
+              {actions.map((action) => (
+                <SpeedDialAction
+                  key={action.name}
+                  icon={action.icon}
+                  tooltipTitle={action.name}
+                />
+              ))}
+            </SpeedDial>
+            <Drawer
+              anchor={"right"}
+              open={drawerstate}
+              onClose={toggleDrawer("right", false)}
+            >
+              {list("right")}
+            </Drawer>
+          </Box>
+        </Col>
+      </Grid>
+    </div>
 
 
 
