@@ -28,6 +28,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { Callout } from "@tremor/react";
 import { TextInput } from "@tremor/react";
+import TextField from '@mui/material/TextField';
 import {
   Accordion,
   AccordionHeader,
@@ -105,7 +106,7 @@ function App() {
 
   const [showGraph, setShowGraph] = useState("1");
   const [counter, setCounter] = useState(1);
-  const [nodegroups, setNodeGroups] = useState([{ index: 0 }]);
+  const [nodegroups, setNodeGroups] = useState([{ index: 0, name : "", description: "" }]);
   const [suspiciongroups, setSuspicionGroups] = useState([{ index: 0 }]);
 
   const [drawerstate, setDrawerState] = useState(false);
@@ -116,6 +117,8 @@ function App() {
   const [ddopen, setDDOpen] = useState(false);
   const [ddplacement, setDDPlacement] = useState<PopperPlacementType>();
   const [opendialog, setOpenDialog] = useState(false);
+  const [nodename, setNodeName] = useState(String);
+  const [nodedescription, setNodeDescription] = useState(String);
 
 
   const toggleDrawer =
@@ -164,13 +167,13 @@ function App() {
         setDDPlacement(newPlacement);
       };
 
-  const handleClick = (idx: number) => {
+  const handleClick = (idx: number, n: String, d: String) => {
     //@ts-ignore
     const graphToSave = window.graph.save();
     //@ts-ignore
     window.savedGraphs[idx] = JSON.parse(JSON.stringify(graphToSave));
     //@ts-ignore
-    setNodeGroups([...nodegroups, { index: idx }]);
+    setNodeGroups([...nodegroups, { index: idx, name: n, description: d }]);
   }
 
   const handleDelete = (i: number) => {
@@ -212,23 +215,33 @@ function App() {
           noValidate
           autoComplete="off"
         >
-          <TextInput id="standard-basic" />
+          <TextInput id="standard-basic" value={nodename} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {setNodeName(event.target.value);}}/>
         </Box>
         <DialogContent dividers>
           <Typography gutterBottom>
-            Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
-            dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta ac
-            consectetur ac, vestibulum at eros.
+            Please write some descriptions of your chosen clusters!
           </Typography>
           <Typography gutterBottom>
-            Praesent commodo cursus magna, vel scelerisque nisl consectetur et.
-            Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
+            Why do you think it is a suspicious pattern of illegal fishing? What is the most important trace in this graph?
           </Typography>
-          <Typography gutterBottom>
-            Aenean lacinia bibendum nulla sed consectetur. Praesent commodo cursus
-            magna, vel scelerisque nisl consectetur et. Donec sed odio dui. Donec
-            ullamcorper nulla non metus auctor fringilla.
-          </Typography>
+          <Box
+            component="form"
+            sx={{
+              '& .MuiTextField-root': { m: 1, width: '50ch' },
+            }}
+            noValidate
+            autoComplete="off"
+          >
+            <TextField
+              id="outlined-multiline-static"
+              label="Description"
+              multiline
+              rows={5}
+              defaultValue="I think it is..."
+              value={nodedescription}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {setNodeDescription(event.target.value);}}
+            />
+          </Box>
           <Callout
             className="mt-4"
             title="No critical system data"
@@ -239,7 +252,7 @@ function App() {
           </Callout>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus variant="secondary" size="lg" onClick={() => { setCounter(counter + 1); handleClick(counter); setOpenDialog(false) }}>
+          <Button autoFocus variant="secondary" size="lg" onClick={() => {setCounter(counter + 1); handleClick(counter,nodename,nodedescription); setOpenDialog(false)}}>
             Save changes
           </Button>
         </DialogActions>
@@ -259,11 +272,13 @@ function App() {
             <List sx={style} component="nav" aria-label="mailbox folders">
               {
                 nodegroups.map((val, i) =>
-                  <Grid numCols={5} className="gap-2">
+                  {
+                    return val.index > 0 ?
+                    <Grid numCols={5} className="gap-2">
                     <Col numColSpan={4}>
                       <ListItem button onClick={(e) => handleChange(e, i)}>
                         <ListItemText>
-                          Group {val.index + 1}
+                          {val.name}
                         </ListItemText>
                       </ListItem>
                       <Divider />
@@ -271,7 +286,8 @@ function App() {
                     <Col numColSpan={1}>
                       <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete(i)} />
                     </Col>
-                  </Grid>
+                  </Grid> : <div></div>
+                  }
                 )
               }
               <ListItem>
@@ -297,12 +313,12 @@ function App() {
                 {
                   suspiciongroups.map((val, i) =>
                     <Grid className="gap-2">
-                        <ListItem button onClick={(e) => handleSusChange(e, i)}>
-                            {
-                              val.index < 4 ? <ListItemText> Node {val.index + 1} </ListItemText> : <ListItemText> Suspicion Node {val.index -3} </ListItemText>
-                            } 
-                        </ListItem>
-                        <Divider />
+                      <ListItem button onClick={(e) => handleSusChange(e, i)}>
+                        {
+                          val.index < 4 ? <ListItemText> Node {val.index + 1} </ListItemText> : <ListItemText> Suspicion Node {val.index - 3} </ListItemText>
+                        }
+                      </ListItem>
+                      <Divider />
                     </Grid>
                   )
                 }
