@@ -4,9 +4,7 @@ import Drawer from '@mui/material/Drawer';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
-import FileCopyIcon from '@mui/icons-material/FileCopyOutlined';
 import SaveIcon from '@mui/icons-material/Save';
-import PrintIcon from '@mui/icons-material/Print';
 import ShareIcon from '@mui/icons-material/Share';
 import { Grid, Col } from "@tremor/react";
 import List from '@mui/material/List';
@@ -44,7 +42,7 @@ import {
 } from "@tremor/react";
 
 import { useState } from "react";
-import { Add, CheckCircleRounded, DeleteOutlineRounded } from '@mui/icons-material';
+import { Add, CheckCircleRounded, DeleteOutlineRounded, DoubleArrow } from '@mui/icons-material';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 
 //@ts-ignore
@@ -92,10 +90,8 @@ function BootstrapDialogTitle(props: DialogTitleProps) {
 function App() {
 
   const actions = [
-    { icon: <FileCopyIcon />, name: 'Copy' },
     { icon: <SaveIcon />, name: 'Save' },
-    { icon: <PrintIcon />, name: 'Print' },
-    { icon: <ShareIcon />, name: 'Share' },
+    { icon: <ShareIcon />, name: 'Share' }
   ];
   const style = {
     width: '100%',
@@ -106,7 +102,7 @@ function App() {
 
   const [showGraph, setShowGraph] = useState("1");
   const [counter, setCounter] = useState(1);
-  const [nodegroups, setNodeGroups] = useState([{ index: 0, name : "", description: "" }]);
+  const [nodegroups, setNodeGroups] = useState([{ index: 0, name: "", description: "" }]);
   const [suspiciongroups, setSuspicionGroups] = useState([{ index: 0 }]);
 
   const [drawerstate, setDrawerState] = useState(false);
@@ -117,6 +113,8 @@ function App() {
   const [ddopen, setDDOpen] = useState(false);
   const [ddplacement, setDDPlacement] = useState<PopperPlacementType>();
   const [opendialog, setOpenDialog] = useState(false);
+  const [opendialogemail, setOpenDialogShareEmail] = useState(false);
+  const [email, setEmailName] = useState(String);
   const [nodename, setNodeName] = useState(String);
   const [nodedescription, setNodeDescription] = useState(String);
 
@@ -149,6 +147,34 @@ function App() {
 
   const handleSusChange = (e: any, i: number) => {
 
+  }
+
+
+  const handleDialClick = (n: String) => {
+    if (n === 'Save') {
+      //Add the node data here
+      var dataStr =
+      'data:vast/json;charset=utf-8,' +
+      encodeURIComponent(JSON.stringify({email,nodegroups}));
+      if (email != "") {
+        const download = document.createElement('a');
+        download.setAttribute('href', dataStr);
+        download.setAttribute('download', email + '.json');
+        document.body.appendChild(download);
+        download.click();
+        download.remove();
+      }else{
+        const download = document.createElement('a');
+        download.setAttribute('href', dataStr);
+        download.setAttribute('download', Date().toLocaleString() + '.json');
+        document.body.appendChild(download);
+        download.click();
+        download.remove();
+      }
+
+    } else if (n === 'Share') {
+      setOpenDialogShareEmail(true);
+    }
   }
 
   const handleClickAN =
@@ -202,6 +228,35 @@ function App() {
   return (
     <div>
       <BootstrapDialog
+        onClose={() => { setOpenDialogShareEmail(false) }}
+        aria-labelledby="customised-dialog-title"
+        open={opendialogemail}
+      >
+        <BootstrapDialogTitle id="customised-dialog-title" onClose={() => { setOpenDialogShareEmail(false) }}>
+          Want to be informed of the following updates?
+        </BootstrapDialogTitle>
+        <DialogContent dividers>
+          <Typography gutterBottom>
+            Please provide your email for us! We will not use it for the other use!
+          </Typography>
+          <Box
+            component="form"
+            sx={{
+              '& .MuiTextField-root': { m: 1, width: '50ch' },
+            }}
+            noValidate
+            autoComplete="off"
+          >
+            <TextInput id="standard-basic" value={email} onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setEmailName(event.target.value); }} />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus variant="secondary" size="lg" onClick={() => { setOpenDialogShareEmail(false) }}>
+            Submit
+          </Button>
+        </DialogActions>
+      </BootstrapDialog>
+      <BootstrapDialog
         onClose={() => { setOpenDialog(false) }}
         aria-labelledby="customized-dialog-title"
         open={opendialog}
@@ -215,7 +270,7 @@ function App() {
           noValidate
           autoComplete="off"
         >
-          <TextInput id="standard-basic" value={nodename} onChange={(event: React.ChangeEvent<HTMLInputElement>) => {setNodeName(event.target.value);}}/>
+          <TextInput id="standard-basic" value={nodename} onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setNodeName(event.target.value); }} />
         </Box>
         <DialogContent dividers>
           <Typography gutterBottom>
@@ -239,7 +294,7 @@ function App() {
               rows={5}
               defaultValue="I think it is..."
               value={nodedescription}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {setNodeDescription(event.target.value);}}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setNodeDescription(event.target.value); }}
             />
           </Box>
           <Callout
@@ -252,7 +307,7 @@ function App() {
           </Callout>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus variant="secondary" size="lg" onClick={() => {setCounter(counter + 1); handleClick(counter,nodename,nodedescription); setOpenDialog(false)}}>
+          <Button autoFocus variant="secondary" size="lg" onClick={() => { setCounter(counter + 1); handleClick(counter, nodename, nodedescription); setOpenDialog(false) }}>
             Save changes
           </Button>
         </DialogActions>
@@ -271,23 +326,22 @@ function App() {
             </>
             <List sx={style} component="nav" aria-label="mailbox folders">
               {
-                nodegroups.map((val, i) =>
-                  {
-                    return val.index > 0 ?
+                nodegroups.map((val, i) => {
+                  return val.index > 0 ?
                     <Grid numCols={5} className="gap-2">
-                    <Col numColSpan={4}>
-                      <ListItem button onClick={(e) => handleChange(e, i)}>
-                        <ListItemText>
-                          {val.name}
-                        </ListItemText>
-                      </ListItem>
-                      <Divider />
-                    </Col>
-                    <Col numColSpan={1}>
-                      <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete(i)} />
-                    </Col>
-                  </Grid> : <div></div>
-                  }
+                      <Col numColSpan={4}>
+                        <ListItem button onClick={(e) => handleChange(e, i)}>
+                          <ListItemText>
+                            {val.name}
+                          </ListItemText>
+                        </ListItem>
+                        <Divider />
+                      </Col>
+                      <Col numColSpan={1}>
+                        <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete(i)} />
+                      </Col>
+                    </Grid> : <div></div>
+                }
                 )
               }
               <ListItem>
@@ -397,7 +451,7 @@ function App() {
           </div>
           <Box sx={{ height: 720, transform: 'translateZ(0px)', flexGrow: 1 }}>
             <SpeedDial
-              ariaLabel="SpeedDial basic example"
+              ariaLabel="SpeedDial basic"
               sx={{ position: 'absolute', bottom: 16, right: 16 }}
               icon={<SpeedDialIcon />}
             >
@@ -406,6 +460,7 @@ function App() {
                   key={action.name}
                   icon={action.icon}
                   tooltipTitle={action.name}
+                  onClick={() => handleDialClick(action.name)}
                 />
               ))}
             </SpeedDial>
