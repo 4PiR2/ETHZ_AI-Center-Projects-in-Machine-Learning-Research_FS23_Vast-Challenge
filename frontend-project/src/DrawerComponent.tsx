@@ -15,6 +15,8 @@ const DrawerComponent = ({ drawerState, toggleDrawer }) => {
       setMatrix(undefined);
     } else if (nodeIds.length < 2) {
       setMatrix("too few nodes");
+    } else if (nodeIds.length > 100) {
+      setMatrix("too many nodes");
     } else {
       const adjMat = await createAdjacencyMatrix(nodeIds);
       setMatrix(adjMat);
@@ -34,6 +36,8 @@ const DrawerComponent = ({ drawerState, toggleDrawer }) => {
       return "";
     } else if (matrix === "too few nodes") {
       return <Alert severity="warning">Please select at least 2 nodes.</Alert>;
+    } else if (matrix === "too many nodes") {
+      return <Alert severity="warning">Please select at most 100 nodes.</Alert>;
     } else {
       const nodeIds = window.graph.findAllByState('node', 'selected').map(node => ({id: node.getModel().id, img: node.getModel().icon.img, color: node.getModel().style.fill}));
       console.log("nodeIds:", nodeIds)
