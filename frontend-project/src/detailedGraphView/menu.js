@@ -163,18 +163,19 @@ function findLouvainCommunitiesAndApplyForceClustering(graph) {
     const newGraphData = louvainOutputToGraphData(louvainOutput);
     newGraphData.edges = graphData.edges.map(augmentEdge);
     newGraphData.nodes = newGraphData.nodes.map(augmentNode);
+    const numClusteredNodes = newGraphData.nodes.length;
     const oldData = JSON.parse(JSON.stringify(graph.save()));
     graph.changeData(newGraphData);
     const newLayout = {
-        type: 'comboForce',
+        type: 'comboCombined',
         center: [ 200, 200 ],     // The center of the graph by default
-        linkDistance: 50,         // Edge length
-        nodeStrength: 700,
-        edgeStrength: 0.2,
-        preventOverlap: true,
-        maxIteration: 400,
-        // comboCollideStrength: 1,
-        alphaDecay: 0.005,
+        outerLayout: new G6.Layout['circular']({
+          type: 'circular',
+          center: [200, 200], // The center of the graph by default
+          startRadius: numClusteredNodes * 10,
+          endRadius: numClusteredNodes * 10,
+          workerEnabled: true
+        }),
         onLayoutEnd: () => {
             graph.fitView();
             const clusterData = JSON.parse(JSON.stringify(graph.save()));

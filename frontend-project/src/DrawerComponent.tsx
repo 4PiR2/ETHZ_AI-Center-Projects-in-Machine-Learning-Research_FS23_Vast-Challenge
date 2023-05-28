@@ -40,7 +40,6 @@ const DrawerComponent = ({ drawerState, toggleDrawer }) => {
       return <Alert severity="warning">Please select at most 100 nodes.</Alert>;
     } else {
       const nodeIds = window.graph.findAllByState('node', 'selected').map(node => ({id: node.getModel().id, img: node.getModel().icon.img, color: node.getModel().style.fill}));
-      console.log("nodeIds:", nodeIds)
       return renderMatrix(nodeIds);
     }
   };

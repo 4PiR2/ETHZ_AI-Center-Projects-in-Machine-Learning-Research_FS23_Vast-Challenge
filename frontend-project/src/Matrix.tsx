@@ -53,6 +53,10 @@ function Matrix({ matrix, cellSize, cellSpacing, labels }) {
   }
 
   const logSelectedEdges = () => {
+    if (matrix == undefined) {
+      console.warn("matrix undefined! Not focusing graph to selection.");
+      return;
+    }
     let selectedEdgeIds = Array.from(selectedCells).map(cell => {
       let [i, j] = cell.split('-').map(Number);
       return matrix[i][j].customId;
