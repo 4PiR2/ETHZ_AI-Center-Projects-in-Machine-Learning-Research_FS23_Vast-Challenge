@@ -22,6 +22,45 @@ const menuItems = [
   { text: 'Group', icon: groupIcon },
 ];
 
+function dataToRadial(data) {
+    const graph = window.parent.graph;
+    graph.data({nodes: [], edges: []});
+    graph.render();
+    graph.destroyLayout();
+    let connectedNodes = new Set();
+    data.nodes.forEach((node) => {
+      connectedNodes.add(node.id);
+    });
+    const centerX = 0;
+    const centerY = 0;
+    const node_diam = graph.get("defaultNode").size
+    let radius = node_diam * connectedNodes.size * 0.2;
+    radius = Math.max(radius, 20);
+    const angleStep = (2 * Math.PI) / (connectedNodes.size);
+    let counter = -1;
+    connectedNodes = [...connectedNodes]
+    
+    connectedNodes.sort((a,b)=>suspicion_scores[a]-suspicion_scores[b]);
+    connectedNodes.forEach((nodeId) => {
+        const node = data.nodes.find((n) => n.id === nodeId);
+        const angle = counter * angleStep - 0.5*Math.PI;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        let newNodeData = {
+            ...node,
+            x, y,
+        }
+        graph.addItem('node', newNodeData);
+        graph.setItemState(newNodeData.id, 'selected', true);
+        counter--;
+    });
+    data.edges.forEach((edge) => {
+      graph.addItem('edge', edge);
+    });
+    graph.fitView();
+}
+window.parent.dataToRadial = dataToRadial;
+
 function radialExpansionAroundSelection(graph) {
     const selectedNodes = graph.findAllByState('node', 'selected');
     if (selectedNodes.length == 0) {

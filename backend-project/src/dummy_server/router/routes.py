@@ -2,7 +2,7 @@ from flask_restful import Api
 from flask import request, jsonify
 from dummy_server.resources.calculate_scores import get_scores
 from dummy_server.resources.get_data import get_graph, get_illegal_nodes, get_user_flags, add_user_flag, add_illegal_node
-from dummy_server.resources.cluster import embed_and_cluster, compute_subgraph, calculate_centrality
+from dummy_server.resources.cluster import compute_reordering, embed_and_cluster, compute_subgraph, calculate_centrality
 
 def add_routes(app):
     api = Api(app)
@@ -25,6 +25,17 @@ def add_routes(app):
     @app.route('/api/v1/illegal_nodes')
     def get_illegal_nodes_data():
         return get_illegal_nodes()
+
+    @app.route('/api/v1/compute_node_info', methods=["POST", "OPTIONS"])
+    def compute_node_info():
+        print("hello")
+        if request.method == 'OPTIONS':
+            # Preflight request. Reply successfully:
+            return ''
+        data = request.get_json()
+        node_ids = data.get('nodeIds')
+        return jsonify({"reordering": compute_reordering(node_ids)})
+
 
     @app.route('/api/v1/user_flags')
     def get_user_flags_data():

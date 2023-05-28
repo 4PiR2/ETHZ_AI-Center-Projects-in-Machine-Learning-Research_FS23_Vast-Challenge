@@ -6,8 +6,12 @@ def load_graph(file_path):
     json_data['links'] = json_data.pop('edges')
     return json_data
 
+graph = None
 def get_graph():
-    return load_graph("data/MC1_preprocessed.json")
+    global graph
+    if graph is None:
+        graph = load_graph("data/MC1_preprocessed.json")
+    return graph
 
 def load_json(file_path):
     with open(file_path, 'r') as f:

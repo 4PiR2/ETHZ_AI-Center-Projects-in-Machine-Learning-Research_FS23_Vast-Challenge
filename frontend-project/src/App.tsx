@@ -27,6 +27,7 @@ import DialogActions from '@mui/material/DialogActions';
 import { Callout } from "@tremor/react";
 import { TextInput } from "@tremor/react";
 import TextField from '@mui/material/TextField';
+import DrawerComponent from './DrawerComponent'
 import {
   Accordion,
   AccordionHeader,
@@ -209,21 +210,6 @@ function App() {
     deleteVal.splice(i, 1)
     setNodeGroups(deleteVal)
   }
-
-
-
-  const list = (anchor: "right") => (
-    <Box
-      sx={{ width: 500 }}
-      role="presentation"
-      onClick={toggleDrawer(anchor, false)}
-      onKeyDown={toggleDrawer(anchor, false)}
-    >
-      {/* TODO: Add more Evaluation Components here! */}
-      <Metric>We can add some Evaluations here ...</Metric>
-    </Box>
-  );
-
 
   return (
     <div>
@@ -446,9 +432,6 @@ function App() {
           </div>
         </Col>
         <Col numColSpan={1}>
-          <div style={{ paddingTop: "20px" }}>
-            <Button variant="secondary" size="xl" onClick={toggleDrawer("right", true)}>Evaluation & Explanation</Button>
-          </div>
           <Box sx={{ height: 720, transform: 'translateZ(0px)', flexGrow: 1 }}>
             <SpeedDial
               ariaLabel="SpeedDial basic"
@@ -464,13 +447,7 @@ function App() {
                 />
               ))}
             </SpeedDial>
-            <Drawer
-              anchor={"right"}
-              open={drawerstate}
-              onClose={toggleDrawer("right", false)}
-            >
-              {list("right")}
-            </Drawer>
+            <DrawerComponent drawerState={drawerstate} toggleDrawer={toggleDrawer}></DrawerComponent>
           </Box>
         </Col>
       </Grid>

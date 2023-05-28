@@ -35,6 +35,8 @@ export const iconMapping = {
   // add other icon mappings as needed
 };
 
+window.parent.iconMapping = iconMapping;
+
 export const typeToStroke = {
     'ownership': '#56B4E9',
     'partnership': '#009E73',
@@ -123,3 +125,6 @@ export function getInitialData() {
   newData.edges = [];
   return newData;
 }
+
+window.parent.augmentNode = augmentNode;
+window.parent.augmentEdge = augmentEdge;

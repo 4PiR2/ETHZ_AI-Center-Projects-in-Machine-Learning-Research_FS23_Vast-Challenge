@@ -48,6 +48,7 @@ function main() {
   graph.render();
   graph.destroyLayout();
   window.parent.graph = graph;
+  window.parent.data = data;
   window.parent.savedGraphs[0] = JSON.parse(JSON.stringify(graph.save()));
 }
 
