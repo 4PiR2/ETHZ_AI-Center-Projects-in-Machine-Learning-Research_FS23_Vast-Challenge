@@ -13,6 +13,8 @@
   }
 }
 
+
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -36,6 +38,43 @@
     transform: rotate(360deg);
   }
 }
+
+nav {
+  grid-area: nav;
+  border: 3px dotted #33d6ff;
+  overflow: auto; 
+  resize: horizontal;
+  min-width: 240px;
+  max-width: 50vw;
+  box-sizing: border-box;
+  touch-action: none;
+  user-select: none;
+  display: inline-block;
+}
+
+body {
+  margin: 10px;
+  height: 100%;
+}
+
+main {
+  display: grid;
+  padding: 3px;
+  grid-gap: 3px;
+  
+  grid-template: 
+  "nav head" min-content
+  "nav main" 1fr
+      / min-content 1fr;
+}
+
+
+
+header {
+  grid-area: head;
+}
+
+
 
 @tailwind base;
 @tailwind components;

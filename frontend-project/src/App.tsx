@@ -1,6 +1,5 @@
 import './App.css';
 import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
@@ -48,6 +47,8 @@ import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 
 //@ts-ignore
 window.savedGraphs = {};
+
+
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -155,8 +156,8 @@ function App() {
     if (n === 'Save') {
       //Add the node data here
       var dataStr =
-      'data:vast/json;charset=utf-8,' +
-      encodeURIComponent(JSON.stringify({email,nodegroups}));
+        'data:vast/json;charset=utf-8,' +
+        encodeURIComponent(JSON.stringify({ email, nodegroups }));
       if (email != "") {
         const download = document.createElement('a');
         download.setAttribute('href', dataStr);
@@ -164,7 +165,7 @@ function App() {
         document.body.appendChild(download);
         download.click();
         download.remove();
-      }else{
+      } else {
         const download = document.createElement('a');
         download.setAttribute('href', dataStr);
         download.setAttribute('download', Date().toLocaleString() + '.json');
@@ -298,163 +299,166 @@ function App() {
           </Button>
         </DialogActions>
       </BootstrapDialog>
-      <Grid numCols={1} numColsSm={2} numColsLg={5} className="gap-2">
-        <Col numColSpan={1} numColSpanLg={1}>
-          <Card>
-            <>
-              <Typography>
-                <text style={{ color: "grey" }}>General Information</text>
-                <Tooltip title="We can add more tooltips on the graph visualisations here..." placement="right">
-                  <HelpOutlineRoundedIcon />
-                </Tooltip>
-              </Typography>
-              <Metric>Groups Panel</Metric>
-            </>
-            <List sx={style} component="nav" aria-label="mailbox folders">
-              {
-                nodegroups.map((val, i) => {
-                  return val.index > 0 ?
-                    <Grid numCols={5} className="gap-2">
-                      <Col numColSpan={4}>
-                        <ListItem button onClick={(e) => handleChange(e, i)}>
-                          <ListItemText>
-                            {val.name}
-                          </ListItemText>
-                        </ListItem>
-                        <Divider />
-                      </Col>
-                      <Col numColSpan={1}>
-                        <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete(i)} />
-                      </Col>
-                    </Grid> : <div></div>
-                }
-                )
-              }
-              <ListItem>
-                <Button
-                  size="lg"
-                  icon={Add}
-                  iconPosition='left'
-                  variant="light"
-                  onClick={() => { setOpenDialog(true) }}
+      <main>
+        <header>
+          <Grid numCols={1} numColsSm={2} numColsLg={10} className="gap-2">
+            <Col numColSpan={7}>
+              <div>
+                <>
+                  <Typography>
+                    <text style={{ color: "grey" }}>General Information</text>
+                    <Tooltip title="We can add more tooltips on the panel functionalities here..." placement="right">
+                      <HelpOutlineRoundedIcon />
+                    </Tooltip>
+                  </Typography>
+                  <Metric>Graph Visualisation on Vast Challenge 2023</Metric>
+                  <TabList
+                    defaultValue="1"
+                    onValueChange={(value) => setShowGraph(value)}
+                    className="mt-6"
+                  >
+                    <Tab value="1" text="Detailed" />
+                    <Tab value="2" text="Overview" />
+                  </TabList>
+                </>
+                <div>
+                  <div
+                    style={{
+                      display: showGraph === "1" ? "block" : "none",
+                    }}
+                  >
+                    <Box sx={{ width: 500 }} style={{ paddingTop: "8px" }}>
+                      <Popper open={anopen} anchorEl={anchorElan} placement={anplacement} transition>
+                        {({ TransitionProps }) => (
+                          <Fade {...TransitionProps} timeout={350}>
+                            <Paper>
+                              <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
+                            </Paper>
+                          </Fade>
+                        )}
+                      </Popper>
+                      <Button variant="secondary" onClick={handleClickAN('bottom-start')}>Use Tips</Button>
+                    </Box>
+                    <iframe scrolling="no"
+                      src="./detailedGraphView.html"
+                      width="100%"
+                      height="1000px"
+                    ></iframe>
+                  </div>
+                  <div
+                    style={{
+                      display: showGraph === "1" ? "none" : "block",
+                    }}
+                  >
+                    <Box sx={{ width: 500 }} style={{ paddingTop: "8px", paddingBottom: "8px" }}>
+                      <Popper open={ddopen} anchorEl={ddanchorEl} placement={ddplacement} transition>
+                        {({ TransitionProps }) => (
+                          <Fade {...TransitionProps} timeout={350}>
+                            <Paper>
+                              <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
+                            </Paper>
+                          </Fade>
+                        )}
+                      </Popper>
+                      <Button variant="secondary" onClick={handleClickDD('bottom-start')}>Use Tips</Button>
+                    </Box>
+                    <iframe src="./cosmos.html" width="100%" height="1000px"></iframe>
+                  </div>
+                </div>
+              </div>
+            </Col>
+            <Col numColSpan={3} numColSpanLg={3}>
+              <Card>
+                <>
+                  <Typography>
+                    <text style={{ color: "grey" }}>General Information</text>
+                    <Tooltip title="We can add more tooltips on the graph visualisations here..." placement="right">
+                      <HelpOutlineRoundedIcon />
+                    </Tooltip>
+                  </Typography>
+                  <Metric>Groups Panel</Metric>
+                </>
+                <List sx={style} aria-label="mailbox folders">
+                  {
+                    nodegroups.map((val, i) => {
+                      return val.index > 0 ?
+                        <Grid numCols={5} className="gap-2">
+                          <Col numColSpan={4}>
+                            <ListItem button onClick={(e) => handleChange(e, i)}>
+                              <ListItemText>
+                                {val.name}
+                              </ListItemText>
+                            </ListItem>
+                            <Divider />
+                          </Col>
+                          <Col numColSpan={1}>
+                            <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete(i)} />
+                          </Col>
+                        </Grid> : <div></div>
+                    }
+                    )
+                  }
+                  <ListItem>
+                    <Button
+                      size="lg"
+                      icon={Add}
+                      iconPosition='left'
+                      variant="light"
+                      onClick={() => { setOpenDialog(true) }}
+                    >
+                      Save view
+                    </Button>
+                  </ListItem>
+                </List>
+              </Card>
+              <div style={{ padding: "5px" }}></div>
+              <Accordion>
+                <AccordionHeader>
+                  Suspicion Suggestions
+                </AccordionHeader>
+                <AccordionBody>
+                  <List sx={style} aria-label="mailbox folders">
+                    {
+                      suspiciongroups.map((val, i) =>
+                        <Grid className="gap-2">
+                          <ListItem button onClick={(e) => handleSusChange(e, i)}>
+                            {
+                              val.index < 4 ? <ListItemText> Node {val.index + 1} </ListItemText> : <ListItemText> Suspicion Node {val.index - 3} </ListItemText>
+                            }
+                          </ListItem>
+                          <Divider />
+                        </Grid>
+                      )
+                    }
+                  </List>
+                </AccordionBody>
+              </Accordion>
+              <Box sx={{ height: 720, transform: 'translateZ(0px)', flexGrow: 1 }}>
+                <SpeedDial
+                  ariaLabel="SpeedDial basic"
+                  sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                  icon={<SpeedDialIcon />}
                 >
-                  Save view
-                </Button>
-              </ListItem>
-            </List>
-          </Card>
-          <div style={{ padding: "5px" }}></div>
-          <Accordion>
-            <AccordionHeader>
-              Suspicion Suggestions
-            </AccordionHeader>
-            <AccordionBody>
-              <List sx={style} component="nav" aria-label="mailbox folders">
-                {
-                  suspiciongroups.map((val, i) =>
-                    <Grid className="gap-2">
-                      <ListItem button onClick={(e) => handleSusChange(e, i)}>
-                        {
-                          val.index < 4 ? <ListItemText> Node {val.index + 1} </ListItemText> : <ListItemText> Suspicion Node {val.index - 3} </ListItemText>
-                        }
-                      </ListItem>
-                      <Divider />
-                    </Grid>
-                  )
-                }
-              </List>
-            </AccordionBody>
-          </Accordion>
-        </Col>
-        <Col numColSpan={3}>
-          <div>
-            <>
-              <Typography>
-                <text style={{ color: "grey" }}>General Information</text>
-                <Tooltip title="We can add more tooltips on the panel functionalities here..." placement="right">
-                  <HelpOutlineRoundedIcon />
-                </Tooltip>
-              </Typography>
-              <Metric>Graph Visualisation on Vast Challenge 2023</Metric>
-              <TabList
-                defaultValue="1"
-                onValueChange={(value) => setShowGraph(value)}
-                className="mt-6"
-              >
-                <Tab value="1" text="Detailed" />
-                <Tab value="2" text="Overview" />
-              </TabList>
-            </>
-            <div>
-              <div
-                style={{
-                  display: showGraph === "1" ? "block" : "none",
-                }}
-              >
-                <Box sx={{ width: 500 }} style={{ paddingTop: "8px" }}>
-                  <Popper open={anopen} anchorEl={anchorElan} placement={anplacement} transition>
-                    {({ TransitionProps }) => (
-                      <Fade {...TransitionProps} timeout={350}>
-                        <Paper>
-                          <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
-                        </Paper>
-                      </Fade>
-                    )}
-                  </Popper>
-                  <Button variant="secondary" onClick={handleClickAN('bottom-start')}>Use Tips</Button>
-                </Box>
-                <iframe scrolling="no"
-                  src="./detailedGraphView.html"
-                  width="100%"
-                  height="1000px"
-                ></iframe>
-              </div>
-              <div
-                style={{
-                  display: showGraph === "1" ? "none" : "block",
-                }}
-              >
-                <Box sx={{ width: 500 }} style={{ paddingTop: "8px", paddingBottom: "8px" }}>
-                  <Popper open={ddopen} anchorEl={ddanchorEl} placement={ddplacement} transition>
-                    {({ TransitionProps }) => (
-                      <Fade {...TransitionProps} timeout={350}>
-                        <Paper>
-                          <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
-                        </Paper>
-                      </Fade>
-                    )}
-                  </Popper>
-                  <Button variant="secondary" onClick={handleClickDD('bottom-start')}>Use Tips</Button>
-                </Box>
-                <iframe src="./cosmos.html" width="100%" height="1000px"></iframe>
-              </div>
-            </div>
-          </div>
-        </Col>
-        <Col numColSpan={1}>
-          <Box sx={{ height: 720, transform: 'translateZ(0px)', flexGrow: 1 }}>
-            <SpeedDial
-              ariaLabel="SpeedDial basic"
-              sx={{ position: 'absolute', bottom: 16, right: 16 }}
-              icon={<SpeedDialIcon />}
-            >
-              {actions.map((action) => (
-                <SpeedDialAction
-                  key={action.name}
-                  icon={action.icon}
-                  tooltipTitle={action.name}
-                  onClick={() => handleDialClick(action.name)}
-                />
-              ))}
-            </SpeedDial>
-            <DrawerComponent drawerState={drawerstate} toggleDrawer={toggleDrawer}></DrawerComponent>
-          </Box>
-        </Col>
-      </Grid>
+                  {actions.map((action) => (
+                    <SpeedDialAction
+                      key={action.name}
+                      icon={action.icon}
+                      tooltipTitle={action.name}
+                      onClick={() => handleDialClick(action.name)}
+                    />
+                  ))}
+                </SpeedDial>
+              </Box>
+            </Col>
+          </Grid>
+        </header>
+        <nav>
+
+          <DrawerComponent drawerState={drawerstate} toggleDrawer={toggleDrawer}></DrawerComponent>
+
+        </nav>
+      </main>
     </div>
-
-
-
   )
 
 }
