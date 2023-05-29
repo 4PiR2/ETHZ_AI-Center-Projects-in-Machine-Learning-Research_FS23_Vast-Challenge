@@ -73,7 +73,7 @@ const DrawerComponent = ({ drawerState, toggleDrawer }) => {
 export default DrawerComponent;
 
 async function reorderNodeIds(nodeIds) {
-  const url = 'http://127.0.0.1:8000/api/v1/compute_node_info';
+  const url = 'http://' + location.hostname + ':8000/api/v1/compute_node_info';
   try {
     const postData = { nodeIds: nodeIds }; // replace with your actual node ids
     const response = await fetch(url, {
