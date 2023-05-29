@@ -1,6 +1,7 @@
 /* Matrix.css */
 .matrix {
 overflow: auto;
+max-height: 88vh;
 }
 
 .matrix table {

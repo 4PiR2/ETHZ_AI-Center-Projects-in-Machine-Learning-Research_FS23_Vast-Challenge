@@ -1,3 +1,5 @@
+// @ts-nocheck 
+
 import './App.css';
 import Box from '@mui/material/Box';
 import SpeedDial from '@mui/material/SpeedDial';
@@ -27,6 +29,8 @@ import { Callout } from "@tremor/react";
 import { TextInput } from "@tremor/react";
 import TextField from '@mui/material/TextField';
 import DrawerComponent from './DrawerComponent'
+import { ResizableBox } from 'react-resizable';
+import 'react-resizable/css/styles.css';
 import {
   Accordion,
   AccordionHeader,
@@ -211,6 +215,31 @@ function App() {
     deleteVal.splice(i, 1)
     setNodeGroups(deleteVal)
   }
+
+  const [isResizing, setIsResizing] = useState(false);
+
+  const handleResizeStart = () => {
+    console.log("onResizeStart");
+    setIsResizing(true);
+  };
+
+  const handleResizeStop = () => {
+    setIsResizing(false);
+  };
+
+  const FullScreenOverlay = () => (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'transparent',
+        zIndex: 9999,
+      }}
+    />
+  );
 
   return (
     <div>
@@ -452,11 +481,22 @@ function App() {
             </Col>
           </Grid>
         </header>
-        <nav>
-
-          <DrawerComponent drawerState={drawerstate} toggleDrawer={toggleDrawer}></DrawerComponent>
-
-        </nav>
+        <div height={window.innerHeight}>
+      {isResizing && <FullScreenOverlay />}
+          <ResizableBox 
+        width={340}
+        height={window.innerHeight}
+        // handleSize = {[20, 100]}
+        minConstraints={[160, window.innerHeight]}
+        maxConstraints={[window.innerWidth / 1.3, window.innerHeight]}
+        resizeHandles={['e']}
+        onResizeStart={handleResizeStart}
+        onResizeStop={handleResizeStop}
+      >
+          <DrawerComponent drawerState={drawerstate} toggleDrawer={toggleDrawer}
+></DrawerComponent>
+        </ResizableBox>
+        </div>
       </main>
     </div>
   )

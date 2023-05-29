@@ -26,8 +26,12 @@
   color: white;
 }
 
+.react-resizable-handle {
+  background-color: #e7e7e7;
+}
+
 .App-link {
-  color: #61dafb;
+  color: #f0f0f0;
 }
 
 @keyframes App-logo-spin {
@@ -37,19 +41,6 @@
   to {
     transform: rotate(360deg);
   }
-}
-
-nav {
-  grid-area: nav;
-  border: 3px dotted #33d6ff;
-  overflow: auto; 
-  resize: horizontal;
-  min-width: 240px;
-  max-width: 50vw;
-  box-sizing: border-box;
-  touch-action: none;
-  user-select: none;
-  display: inline-block;
 }
 
 body {
