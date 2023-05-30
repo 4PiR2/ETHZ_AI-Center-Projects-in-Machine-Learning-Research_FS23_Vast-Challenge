@@ -13,7 +13,7 @@ function check_overview_status() {
 
 setInterval(check_overview_status, 100);
 
-function set_selected_nodes(uids) {
+function set_selected_nodes(uids: string[]) {
     // @ts-ignore
     parentWindow.selected_nodes = uids;
     update_selected_nodes(graphNodes.filter((n) => uids.indexOf(n.id) > -1));
@@ -110,7 +110,7 @@ function handleMouseUp() {
     // console.log("Selected region:", startX, startY, endX, endY);
     selected_nodes = select_by_rect(Math.min(startX, endX), Math.min(startY, endY), Math.max(startX, endX), Math.max(startY, endY));
     let uids: string[] = [];
-    selected_nodes.forEach((n) => {
+    selected_nodes.forEach((n: any) => {
         uids.push(n.id);
     })
     set_selected_nodes(uids);
