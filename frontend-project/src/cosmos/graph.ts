@@ -3,6 +3,8 @@ import {LabelOptions, LabelRenderer} from "@interacta/css-labels";
 import * as neo4j from 'neo4j-driver';
 import "./styles.css";
 
+export {graph, select_by_rect};
+
 type Node = {
     id: string;
     name: string;
@@ -78,29 +80,46 @@ const plot_colors_1 = [
 
 const config: GraphConfigInterface<Node, Link> = {
     backgroundColor: '#ffffffff',
-    nodeSize: (n) => Math.sqrt(n.weight_in + n.weight_out),
-    nodeColor: (n) => plot_colors_1[Number(n.n.substring(1))] + '77',
+    spaceSize: 4096,
+    // nodeColor: (n) => plot_colors_1[Number(n.n.substring(1))] + '77',
+    nodeColor: (n) => selected_nodes.filter((m: Node) => n.id == m.id).length ? '#ff000077' : '#00000077',
     nodeGreyoutOpacity: .1,
-    linkWidth: (l) => l.weight,
-    linkColor: (l) => plot_colors_0[Number(l.e.substring(1))] + Math.floor((Math.min(l.weight, .999) + 1.) * 256.).toString(16).substring(1),
-    linkArrows: true,
+    // nodeSize: (n) => Math.sqrt(n.weight_in + n.weight_out),
+    nodeSizeScale: 1,
+    renderHighlightedNodeRing: false,
+    // highlightedNodeRingColor: undefined,
+    renderLinks: true,
+    // linkColor: (l) => plot_colors_0[Number(l.e.substring(1))] + Math.floor((Math.min(l.weight, .999) + 1.) * 256.).toString(16).substring(1),
     linkGreyoutOpacity: .1,
+    // linkWidth: (l) => l.weight,
+    linkWidthScale: 1.,
+    linkArrows: false,
+    linkArrowsSizeScale: 1,
+    linkVisibilityDistanceRange: [50., 150.],
+    linkVisibilityMinTransparency: .25,
+    useQuadtree: false,
     simulation: {
         linkDistance: 20.,
-        linkSpring: 2,
-        repulsion: 0.2,
-        gravity: 0.1,
-        decay: 100000,
+        linkSpring: 2.,
+        repulsion: .2,
+        gravity: .1,
+        decay: 1e5,
         onTick: () => cosmosLabels.update(),
     },
     events: {
         onZoom: () => cosmosLabels.update(),
         onClick: (node, i, pos, event) => onClick_event(node, i, pos, event),
     },
+    showFPSMonitor: false,
+    pixelRatio: 1.,
+    scaleNodesOnZoom: true,
+    // randomSeed: undefined,
 };
 
-const driver: neo4j.Driver = neo4j.driver('bolt://' + location.hostname + ':7687', neo4j.auth.basic('neo4j', '12345678'), {/* encrypted: 'ENCRYPTION_OFF' */});
-let graph: Graph<Node, Link> = new Graph(document.querySelector('#graph') as HTMLCanvasElement, config);
+// const driver: neo4j.Driver = neo4j.driver('bolt://' + location.hostname + ':7687', neo4j.auth.basic('neo4j', '12345678'), {/* encrypted: 'ENCRYPTION_OFF' */});
+const driver: neo4j.Driver = neo4j.driver('bolt://' + 'mtc-desktop-09.ethz.ch' + ':7687', neo4j.auth.basic('neo4j', '12345678'), {/* encrypted: 'ENCRYPTION_OFF' */});
+let canvas_graph: HTMLCanvasElement = document.querySelector('#graph') as HTMLCanvasElement;
+let graph: Graph<Node, Link> = new Graph(canvas_graph, config);
 const cosmosLabels = new CosmosLabels<Node, Link>(document.querySelector('#labels') as HTMLDivElement, graph);
 let graphNodes: Node[] = [];
 let graphLinks: Link[] = [];
@@ -108,6 +127,7 @@ let nodes_all: Node[] = [];
 let links_all: Link[] = [];
 let isPaused = false;
 let is_add_nodes = true;
+let selected_nodes: Node[] = [];
 
 function onClick_event(node: Node | undefined, i: number | undefined, pos: [number, number] | undefined, event: MouseEvent){
     if (node && i !== undefined) {
@@ -163,7 +183,6 @@ function onClick_event(node: Node | undefined, i: number | undefined, pos: [numb
             });
         }
         graph.setData(graphNodes, graphLinks, !isPaused);
-        draw_matrix();
         // graph.unselectNodes();
         // graph.selectNodeById(node.id);
         cosmosLabels.update();
@@ -259,12 +278,12 @@ function process_records(records: any) {
     graphNodes.push(n_dummy);
     graphLinks.push(e_dummy);
     graph.setData(graphNodes, graphLinks, !isPaused);
-    draw_matrix();
     graph.setZoomLevel(1.);
 }
 
 let query: string;
-query = 'MATCH (n)-[r]-() WHERE n:M0 RETURN n, r;';
+// query = 'MATCH (n)-[r]-() WHERE n:M0 RETURN n, r;';
+query = 'MATCH (n) OPTIONAL MATCH (n)-[r]-() RETURN n, r;';
 exec_query('neo4j', query, process_records);
 
 
@@ -317,21 +336,11 @@ function submit_query() {
 }
 queryButton.addEventListener('click', () =>  submit_query());
 
-function draw_matrix() {
-    const canvas = document.querySelector('#matrix') as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d');
-    let reverse_index: { [id: string]: number } = {};
-    graphNodes.forEach((node) => {
-        if (node.id != 'U9999') {
-            reverse_index[node.id] = Object.keys(reverse_index).length;
-        }
-    });
-    // @ts-ignore
-    canvas.parentElement.style.width = canvas.parentElement.style.height = canvas.width = canvas.height = Object.keys(reverse_index).length;
-    // @ts-ignore
-    ctx.fillStyle = '#f00';
-    graphLinks.forEach((link) => {
-        // @ts-ignore
-        ctx.fillRect(reverse_index[link.target], reverse_index[link.source], 1, 1);
-    });
+function select_by_rect(left: number, top: number, right: number, bottom: number) {
+    graph.selectNodesInRange([[left, top], [right, bottom]]);
+    const nodes = graph.getSelectedNodes();
+    selected_nodes = nodes ? nodes : [];
+    graph.unselectNodes();
+    graph.setConfig({nodeColor: (n) => selected_nodes.filter((m: Node) => n.id == m.id).length ? '#ff000077' : '#00000077'});
+    return selected_nodes;
 }
