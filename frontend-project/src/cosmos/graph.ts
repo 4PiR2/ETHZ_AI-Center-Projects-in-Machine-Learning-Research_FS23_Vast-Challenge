@@ -3,7 +3,7 @@ import {LabelOptions, LabelRenderer} from "@interacta/css-labels";
 import * as neo4j from 'neo4j-driver';
 import "./styles.css";
 
-export {graph, select_by_rect};
+export {graph, graphNodes, selected_nodes, select_by_rect, update_selected_nodes, is_querying, set_paused, set_is_add_nodes, exec_query};
 
 type Node = {
     id: string;
@@ -128,6 +128,7 @@ let links_all: Link[] = [];
 let isPaused = false;
 let is_add_nodes = true;
 let selected_nodes: Node[] = [];
+let is_querying = true;
 
 function onClick_event(node: Node | undefined, i: number | undefined, pos: [number, number] | undefined, event: MouseEvent){
     if (node && i !== undefined) {
@@ -190,6 +191,7 @@ function onClick_event(node: Node | undefined, i: number | undefined, pos: [numb
 }
 
 function exec_query(database: string, query: string, records_handler: (_: any) => any) {
+    is_querying = true;
     const session: neo4j.Session = driver.session({database: database});
     session
         .run(query)
@@ -199,6 +201,7 @@ function exec_query(database: string, query: string, records_handler: (_: any) =
             // driver.close();
                     // @ts-ignore
             document.getElementById('wait').style.visibility = 'hidden';
+            is_querying = false;
         })
         .catch((error) => {
             console.log(error);
@@ -286,61 +289,28 @@ let query: string;
 query = 'MATCH (n) OPTIONAL MATCH (n)-[r]-() RETURN n, r;';
 exec_query('neo4j', query, process_records);
 
-
-/* ~ Demo Actions ~ */
-// Start / Pause
-const pauseButton = document.getElementById("pause") as HTMLDivElement;
-
-function pause() {
-    isPaused = true;
-    pauseButton.textContent = "Start";
-    graph.pause();
-}
-
-function start() {
-    isPaused = false;
-    pauseButton.textContent = "Pause";
-    graph.start();
-}
-
-function togglePause() {
-    if (isPaused) start();
-    else pause();
-}
-
-pauseButton.addEventListener("click", togglePause);
-
-const editButton = document.getElementById("edit") as HTMLDivElement;
-
-function toggleEdit() {
-    if (is_add_nodes) {
-        is_add_nodes = false;
-        editButton.textContent = "Removal Mode (Click to Toggle to Addition Mode)";
+function set_paused(pause: boolean) {
+    if (pause) {
+        graph.pause();
     } else {
-        is_add_nodes = true;
-        editButton.textContent = "Addition Mode (Click to Toggle to to Removal Mode)";
+        graph.start();
     }
+    isPaused = pause;
 }
 
-editButton.addEventListener("click", toggleEdit);
-
-const queryButton = document.getElementById('submit_query') as HTMLDivElement;
-function submit_query() {
-    const textbox = document.getElementById('freeform');
-    if (textbox) {
-        // @ts-ignore
-        exec_query('neo4j', textbox.value, process_records);
-        // @ts-ignore
-        document.getElementById('wait').style.visibility = 'visible';
-    }
+function set_is_add_nodes(b: boolean) {
+    is_add_nodes = b;
 }
-queryButton.addEventListener('click', () =>  submit_query());
 
 function select_by_rect(left: number, top: number, right: number, bottom: number) {
     graph.selectNodesInRange([[left, top], [right, bottom]]);
     const nodes = graph.getSelectedNodes();
-    selected_nodes = nodes ? nodes : [];
     graph.unselectNodes();
-    graph.setConfig({nodeColor: (n) => selected_nodes.filter((m: Node) => n.id == m.id).length ? '#ff000077' : '#00000077'});
+    update_selected_nodes(nodes ? nodes : []);
     return selected_nodes;
+}
+
+function update_selected_nodes(nodes: any) {
+    selected_nodes = nodes;
+    graph.setConfig({nodeColor: (n) => selected_nodes.filter((m: Node) => n.id == m.id).length ? '#ff000077' : '#00000077'});
 }

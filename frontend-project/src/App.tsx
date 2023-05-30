@@ -346,8 +346,8 @@ function App() {
                     onValueChange={(value) => setShowGraph(value)}
                     className="mt-6"
                   >
-                    <Tab value="1" text="Detailed" />
-                    <Tab value="2" text="Overview" />
+                    <Tab value="1" id="detailed_button" text="Detailed" />
+                    <Tab value="2" id="overview_button" text="Overview" style={{visibility: "hidden"}} />
                   </TabList>
                 </>
                 <div>
@@ -391,12 +391,12 @@ function App() {
                       </Popper>
                       <Button variant="secondary" onClick={handleClickDD('bottom-start')}>Use Tips</Button>
                     </Box>
-                    <iframe src="./cosmos.html" width="100%" height="1000px"></iframe>
+                    <iframe id="cosmos" src="./cosmos.html" scrolling="no" width="100%" height="1000px"></iframe>
                   </div>
                 </div>
               </div>
             </Col>
-            <Col numColSpan={3} numColSpanLg={3}>
+            <Col numColSpan={3} numColSpanLg={3} id="right_panel">
               <Card>
                 <>
                   <Typography>

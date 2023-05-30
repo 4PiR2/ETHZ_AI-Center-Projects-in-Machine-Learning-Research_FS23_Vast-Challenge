@@ -126,5 +126,15 @@ export function getInitialData() {
   return newData;
 }
 
+export function getAllData() {
+  const newData = new Object();
+  newData.nodes = data.nodes;
+  newData.nodes[0].x = 0;
+  newData.nodes[0].y = 0;
+  newData.nodes[0] = augmentNode(newData.nodes[0], )
+  newData.edges = [];
+  return newData;
+}
+
 window.parent.augmentNode = augmentNode;
 window.parent.augmentEdge = augmentEdge;

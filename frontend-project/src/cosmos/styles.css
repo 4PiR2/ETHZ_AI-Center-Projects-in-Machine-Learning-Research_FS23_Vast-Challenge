@@ -35,6 +35,7 @@ body {
   user-select: none;
   position: relative;
   z-index: 20;
+  max-width: max-content;
 }
 
 #labels {
