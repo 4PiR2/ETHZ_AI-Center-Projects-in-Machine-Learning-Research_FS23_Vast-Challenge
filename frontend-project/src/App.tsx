@@ -29,6 +29,8 @@ import DrawerComponent from './DrawerComponent'
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import React from 'react';
+import fishLenseLogo from './fishLense.svg';
+
 import {
   Accordion,
   AccordionHeader,
@@ -316,20 +318,17 @@ function App() {
       <main>
         <header>
           <Grid numCols={1} numColsSm={2} numColsLg={10} className="gap-2">
-            <Col numColSpan={7}>
+            <Col numColSpan={8}>
               <div>
                 <>
-                  <Typography>
-                    <text style={{ color: "grey" }}>General Information</text>
-                    <Tooltip title="We can add more tooltips on the panel functionalities here..." placement="right">
-                      <HelpOutlineRoundedIcon />
-                    </Tooltip>
-                  </Typography>
-                  <Metric>Graph Visualisation on Vast Challenge 2023</Metric>
+                <Box display="flex" justifyContent="center" alignItems="center">
+                <img src={fishLenseLogo} alt="logo" style={{ marginRight: '10px', height: '100%'}} />
+                </Box>
                   <TabList
                     defaultValue="2"
                     onValueChange={(value) => setShowGraph(value)}
                     className="mt-6"
+                    style={{marginTop:'-20px'}}
                   >
                     <Tab value="1" id="user_tip" text="Use Tips" />
                     <Tab value="2" id="detailed_button" text="Detailed" />
@@ -376,24 +375,18 @@ function App() {
                   </div>
               </div>
             </Col>
-            <Col numColSpan={3} numColSpanLg={3} id="right_panel">
-              <Card style={{ height: "100vh" }}>
-                <Card>
-                  <>
-                    <Typography>
-                      <text style={{ color: "grey" }}>General Information</text>
-                      <Tooltip title="We can add more tooltips on the graph visualisations here..." placement="right">
-                        <HelpOutlineRoundedIcon />
-                      </Tooltip>
-                    </Typography>
-                    <Metric>Groups Panel</Metric>
-                  </>
-                  <List sx={style} aria-label="mailbox folders">
-                    {
-                      nodegroups.map((val, i) => {
-                        return val.index > 0 ?
-                          <Grid numCols={5} className="gap-2">
-                            <Col numColSpan={4}>
+            <Col numColSpan={2} numColSpanLg={2} id="right_panel">
+              <Card style={{height: "100vh"}}>
+              <Card>
+                <>
+                  <Typography variant="h4">Saved views</Typography>
+                </>
+                <List sx={style} aria-label="mailbox folders">
+                  {
+                    nodegroups.map((val, i) => {
+                      return val.index > 0 ?
+                        <Grid numCols={5} className="gap-2">
+                          <Col numColSpan={4}>
                               <Tooltip title={val.description}>
                                 <ListItem button onClick={(e) => handleChange(e, i)}>
                                   <ListItemText>
