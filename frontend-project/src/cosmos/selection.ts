@@ -34,28 +34,10 @@ function sync1() {
 overview_button.addEventListener('click', () =>  sync1());
 
 // Define canvas and context
-const canvas_graph = document.getElementById("graph") as HTMLCanvasElement;
 const canvas = document.getElementById("overlay") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
-const selection_button = document.getElementById("select") as HTMLCanvasElement;
-let selection_mode = false;
 let selected_nodes: any = [];
 
-function enable_selection() {
-    if (selection_mode) {
-        selection_mode = false;
-        selection_button.innerHTML = 'Selection Mode';
-        canvas.style.visibility = 'hidden';
-    } else {
-        selection_mode = true;
-        selection_button.innerHTML = 'Exit Selection Mode';
-        canvas.width = canvas_graph.width;
-        canvas.height = canvas_graph.height;
-        canvas.style.visibility = 'visible';
-    }
-}
-
-selection_button.addEventListener("click", enable_selection);
 
 // Define variables
 let isDrawing = false;
@@ -85,23 +67,23 @@ function handleMouseMove(event: MouseEvent) {
     endX = event.clientX - canvas.offsetLeft;
     endY = event.clientY - canvas.offsetTop;
 
-    canvas.width = canvas_graph.width;
-    canvas.height = canvas_graph.height;
-
     // Clear canvas
     // @ts-ignore
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw rectangle
     // @ts-ignore
-    ctx.strokeStyle = "red";
+    ctx.strokeStyle = '#1f77b4ff';
     // ctx.lineWidth = 2;
     // @ts-ignore
     ctx.strokeRect(startX, startY, endX - startX, endY - startY);
 }
 
 // Handle mouse up event
-function handleMouseUp() {
+function handleMouseUp(event: MouseEvent) {
+    endX = event.clientX - canvas.offsetLeft;
+    endY = event.clientY - canvas.offsetTop;
+
     isDrawing = false;
     // @ts-ignore
     ctx.clearRect(0, 0, canvas.width, canvas.height);

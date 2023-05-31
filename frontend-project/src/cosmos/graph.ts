@@ -3,7 +3,7 @@ import {LabelOptions, LabelRenderer} from "@interacta/css-labels";
 import * as neo4j from 'neo4j-driver';
 import "./styles.css";
 
-export {graph, graphNodes, selected_nodes, select_by_rect, update_selected_nodes, is_querying, set_paused, set_is_add_nodes, exec_query};
+export {graph, graphNodes, selected_nodes, exec_query, process_records, select_by_rect, update_selected_nodes, set_paused, set_is_add_nodes, is_querying};
 
 type Node = {
     id: string;
@@ -82,7 +82,7 @@ const config: GraphConfigInterface<Node, Link> = {
     backgroundColor: '#ffffffff',
     spaceSize: 4096,
     // nodeColor: (n) => plot_colors_1[Number(n.n.substring(1))] + '77',
-    nodeColor: (n) => selected_nodes.filter((m: Node) => n.id == m.id).length ? '#ff000077' : '#00000077',
+    nodeColor: (n) => (selected_nodes.filter((m: Node) => n.id == m.id).length ? '#1f77b4' : '#000000') + (n.id == 'U9999' ? '00' : 'ff'),
     nodeGreyoutOpacity: .1,
     // nodeSize: (n) => Math.sqrt(n.weight_in + n.weight_out),
     nodeSizeScale: 1,
@@ -90,6 +90,7 @@ const config: GraphConfigInterface<Node, Link> = {
     // highlightedNodeRingColor: undefined,
     renderLinks: true,
     // linkColor: (l) => plot_colors_0[Number(l.e.substring(1))] + Math.floor((Math.min(l.weight, .999) + 1.) * 256.).toString(16).substring(1),
+    linkColor: '#00000033',
     linkGreyoutOpacity: .1,
     // linkWidth: (l) => l.weight,
     linkWidthScale: 1.,
@@ -101,7 +102,7 @@ const config: GraphConfigInterface<Node, Link> = {
     simulation: {
         linkDistance: 20.,
         linkSpring: 2.,
-        repulsion: .2,
+        repulsion: .5,
         gravity: .1,
         decay: 1e5,
         onTick: () => cosmosLabels.update(),
@@ -312,5 +313,5 @@ function select_by_rect(left: number, top: number, right: number, bottom: number
 
 function update_selected_nodes(nodes: any) {
     selected_nodes = nodes;
-    graph.setConfig({nodeColor: (n) => selected_nodes.filter((m: Node) => n.id == m.id).length ? '#ff000077' : '#00000077'});
+    graph.setConfig({nodeColor: (n) => (selected_nodes.filter((m: Node) => n.id == m.id).length ? '#1f77b4' : '#000000') + (n.id == 'U9999' ? '00' : 'ff')});
 }

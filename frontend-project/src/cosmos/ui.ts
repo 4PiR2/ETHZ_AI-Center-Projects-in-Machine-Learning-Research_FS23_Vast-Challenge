@@ -1,4 +1,4 @@
-import {set_paused, set_is_add_nodes, exec_query} from "./graph";
+import {set_paused, set_is_add_nodes, exec_query, process_records} from "./graph";
 
 // Start / Pause
 const pauseButton = document.getElementById("pause") as HTMLDivElement;
@@ -31,6 +31,25 @@ function toggleEdit() {
 
 editButton.addEventListener("click", toggleEdit);
 
+const canvas_graph = document.getElementById("graph") as HTMLCanvasElement;
+const canvas = document.getElementById("overlay") as HTMLCanvasElement;
+const selection_button = document.getElementById("select") as HTMLCanvasElement;
+let selection_mode = false;
+function enable_selection() {
+    selection_mode = !selection_mode;
+    if (selection_mode) {
+        selection_button.innerHTML = 'Exit Lasso Mode';
+        canvas.width = canvas_graph.width;
+        canvas.height = canvas_graph.height;
+        canvas.style.visibility = 'visible';
+    } else {
+        selection_button.innerHTML = 'Lasso Mode';
+        canvas.style.visibility = 'hidden';
+    }
+}
+
+selection_button.addEventListener("click", enable_selection);
+
 const queryButton = document.getElementById('submit_query') as HTMLDivElement;
 function submit_query() {
     const textbox = document.getElementById('freeform');
@@ -42,3 +61,18 @@ function submit_query() {
     }
 }
 queryButton.addEventListener('click', () =>  submit_query());
+
+const filter_button = document.getElementById('filter_button') as HTMLDivElement;
+
+function filter_query() {
+    const filter_src = document.getElementById('filter_src');
+    const filter_tgt = document.getElementById('filter_tgt');
+    const filter_edge = document.getElementById('filter_edge');
+    // @ts-ignore
+    const query = "MATCH (n" + filter_src.value + ")-[r" + filter_edge.value + "]-(m" + filter_tgt.value + ") RETURN n, r, m;";
+    exec_query('neo4j', query, process_records);
+    // @ts-ignore
+    document.getElementById('wait').style.visibility = 'visible';
+}
+
+filter_button.addEventListener('click', () => filter_query())
