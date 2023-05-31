@@ -116,9 +116,9 @@ export function augmentEdge(edge) {
     return augmentedEdge;
 }
 
-export function getInitialData() {
+export function getNodeData(nodeId) {
   const newData = new Object();
-  newData.nodes = data.nodes.filter(node => node.id === targetIDs[0]);
+  newData.nodes = data.nodes.filter(node => node.id === nodeId);
   newData.nodes[0].x = 0;
   newData.nodes[0].y = 0;
   newData.nodes[0] = augmentNode(newData.nodes[0], )

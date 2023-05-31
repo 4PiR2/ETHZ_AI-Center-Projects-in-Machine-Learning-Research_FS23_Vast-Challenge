@@ -1,10 +1,12 @@
-import {getInitialData} from './data.js';
+import {getNodeData} from './data.js';
 import {menu} from './menu.js';
 import {legend} from './legend.js';
 import {tooltip} from './tooltip.js';
 import {showContextMenu} from './comboMenu.js';
 import {data, augmentEdge} from './data.js';
 import {createLegend} from './newLegend.js';
+import { targetIDs } from './ids.js';
+import { radialExpansionAroundSelection } from './menu.js';
 
 const graph = new G6.Graph({
   container: 'container',
@@ -43,13 +45,25 @@ const graph = new G6.Graph({
   plugins: [menu, tooltip]
 });
 
-function main() {
-  graph.data(getInitialData());
+function setViewToNode(nodeId) {
+  const nodeData = getNodeData(nodeId);
+  graph.data(nodeData);
   graph.render();
   graph.destroyLayout();
+  graph.getNodes().forEach(node => {node.setState('selected', true)});
+  radialExpansionAroundSelection(graph);
+  graph.getNodes().forEach(node => {node.setState('selected', false)});
+  graph.fitView();
+}
+window.parent.setViewToNode = setViewToNode
+
+function main() {
+  setViewToNode(targetIDs[0]);
   window.parent.graph = graph;
+  window.parent.saveView(1, `Organization ${targetIDs[0].split("|")[0]}`, 
+  'We received a tip that this organization is involved in illegal fishery. Can you investigate its connections?')
   window.parent.data = data;
-  window.parent.savedGraphs[0] = JSON.parse(JSON.stringify(graph.save()));
+  // window.parent.savedGraphs[0] = JSON.parse(JSON.stringify(graph.save()));
 }
 
 graph.on('combo:contextmenu', (evt) => {
@@ -64,7 +78,6 @@ graph.on('combo:contextmenu', (evt) => {
 document.addEventListener('click', () => {
   let contextMenu = document.getElementById('contextMenuCombo');
   if (contextMenu) {
-    console.log("display style set to none")
     contextMenu.style.display = 'none';
   }
 });

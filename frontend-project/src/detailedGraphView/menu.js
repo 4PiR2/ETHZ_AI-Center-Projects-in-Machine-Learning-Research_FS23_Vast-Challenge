@@ -33,9 +33,9 @@ function dataToRadial(data) {
     });
     const centerX = 0;
     const centerY = 0;
-    const node_diam = graph.get("defaultNode").size
+    const node_diam = graph.get("defaultNode").size;
     let radius = node_diam * connectedNodes.size * 0.2;
-    radius = Math.max(radius, 20);
+    radius = Math.max(radius, 55);
     const angleStep = (2 * Math.PI) / (connectedNodes.size);
     let counter = -1;
     connectedNodes = [...connectedNodes]
@@ -61,7 +61,7 @@ function dataToRadial(data) {
 }
 window.parent.dataToRadial = dataToRadial;
 
-function radialExpansionAroundSelection(graph) {
+export function radialExpansionAroundSelection(graph) {
     const selectedNodes = graph.findAllByState('node', 'selected');
     if (selectedNodes.length == 0) {
         return;
@@ -92,7 +92,7 @@ function radialExpansionAroundSelection(graph) {
     // calculate the radius of the circle based on the number of nodes
     const node_diam = graph.get("defaultNode").size
     let radius = node_diam * connectedNodes.size * 0.2;
-    radius = Math.max(radius, 20);
+    radius = Math.max(radius, 55);
     const angleStep = (2 * Math.PI) / (connectedNodes.size);
     let counter = -1;
     connectedNodes = [...connectedNodes]

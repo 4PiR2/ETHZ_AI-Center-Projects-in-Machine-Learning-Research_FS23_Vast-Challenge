@@ -5,8 +5,8 @@ import Box from '@mui/material/Box';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
+import UploadIcon from '@mui/icons-material/Upload';
 import SaveIcon from '@mui/icons-material/Save';
-import ShareIcon from '@mui/icons-material/Share';
 import { Grid, Col } from "@tremor/react";
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -31,6 +31,7 @@ import TextField from '@mui/material/TextField';
 import DrawerComponent from './DrawerComponent'
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
+import React from 'react';
 import {
   Accordion,
   AccordionHeader,
@@ -96,8 +97,8 @@ function BootstrapDialogTitle(props: DialogTitleProps) {
 function App() {
 
   const actions = [
-    { icon: <SaveIcon />, name: 'Save' },
-    { icon: <ShareIcon />, name: 'Share' }
+    { icon: <SaveIcon />, name: 'Export' },
+    { icon: <UploadIcon />, name: 'Import' },
   ];
   const style = {
     width: '100%',
@@ -107,9 +108,14 @@ function App() {
 
 
   const [showGraph, setShowGraph] = useState("1");
-  const [counter, setCounter] = useState(1);
+  const [counter, setCounter] = useState(2);
   const [nodegroups, setNodeGroups] = useState([{ index: 0, name: "", description: "" }]);
-  const [suspiciongroups, setSuspicionGroups] = useState([{ index: 0 }]);
+  const [suspiciongroups, setSuspicionGroups] = useState([
+    { index: 0, name: "oceanfront oasis inc carriers", nodeId: "oceanfront oasis inc carriers|3172"},
+    { index: 1, name: "mar de la vida ojsc", nodeId: "mar de la vida ojsc|3177"},
+    { index: 2, name: "979893388", nodeId: "979893388|901"},
+    { index: 3, name: "8327", nodeId: "8327|386"},
+  ]);
 
   const [drawerstate, setDrawerState] = useState(false);
   const [anchorElan, setAnchorElAN] = useState<HTMLButtonElement | null>(null);
@@ -151,35 +157,59 @@ function App() {
     setNodeGroups(onchangeVal)
   }
 
-  const handleSusChange = (e: any, i: number) => {
-
+  const handleSusChange = (e: any, nodeId: string) => {
+    window.setViewToNode(nodeId);
   }
 
+  function handleImport(event) {
+    const file = event.target.files[0];
+    // Create a new FileReader object
+    const reader = new FileReader();
+    // Define what happens when the file is successfully read
+    reader.onload = (event) => {
+      const fileContent = event.target.result;
+      try {
+        // Parse the file content string as JSON
+        const json = JSON.parse(fileContent);
+        window.savedGraphs = json.graphs;
+        setNodeGroups(json.nodegroups);
+        // handle the json data here
+      } catch (err) {
+        // Handle the situation where the file content was not valid JSON
+        console.error('Could not parse file content as JSON', err);
+      }
+    };
+    // Start reading the file
+    // When finished, the `onload` callback will be triggered
+    reader.readAsText(file);
+  }
+
+  let fileInput = React.createRef();
 
   const handleDialClick = (n: String) => {
-    if (n === 'Save') {
+    if (n === 'Export') {
       //Add the node data here
       var dataStr =
         'data:vast/json;charset=utf-8,' +
-        encodeURIComponent(JSON.stringify({ email, nodegroups }));
+        encodeURIComponent(JSON.stringify({ nodegroups: nodegroups, graphs: window.savedGraphs }));
       if (email != "") {
         const download = document.createElement('a');
         download.setAttribute('href', dataStr);
-        download.setAttribute('download', email + '.json');
+        download.setAttribute('download', 'analysis_' + email + '.json');
         document.body.appendChild(download);
         download.click();
         download.remove();
       } else {
         const download = document.createElement('a');
         download.setAttribute('href', dataStr);
-        download.setAttribute('download', Date().toLocaleString() + '.json');
+        download.setAttribute('download', 'analysis_' + Date().toLocaleString() + '.json');
         document.body.appendChild(download);
         download.click();
         download.remove();
       }
 
-    } else if (n === 'Share') {
-      setOpenDialogShareEmail(true);
+    } else if (n === 'Import') {
+      fileInput.current.click();
     }
   }
 
@@ -202,11 +232,13 @@ function App() {
   const handleClick = (idx: number, n: String, d: String) => {
     //@ts-ignore
     const graphToSave = window.graph.save();
+    const newData = JSON.parse(JSON.stringify(graphToSave));
     //@ts-ignore
-    window.savedGraphs[idx] = JSON.parse(JSON.stringify(graphToSave));
+    window.savedGraphs[idx] = newData;
     //@ts-ignore
-    setNodeGroups([...nodegroups, { index: idx, name: n, description: d }]);
+    setNodeGroups([...nodegroups, { index: idx, name: n, description: d}]);
   }
+  window.saveView = handleClick
 
   const handleDelete = (i: number) => {
     //@ts-ignore
@@ -219,7 +251,6 @@ function App() {
   const [isResizing, setIsResizing] = useState(false);
 
   const handleResizeStart = () => {
-    console.log("onResizeStart");
     setIsResizing(true);
   };
 
@@ -240,6 +271,7 @@ function App() {
       }}
     />
   );
+  document.body.style.overflow = "hidden"
 
   return (
     <div>
@@ -397,6 +429,7 @@ function App() {
               </div>
             </Col>
             <Col numColSpan={3} numColSpanLg={3} id="right_panel">
+              <Card style={{height: "100vh"}}>
               <Card>
                 <>
                   <Typography>
@@ -413,11 +446,13 @@ function App() {
                       return val.index > 0 ?
                         <Grid numCols={5} className="gap-2">
                           <Col numColSpan={4}>
-                            <ListItem button onClick={(e) => handleChange(e, i)}>
-                              <ListItemText>
-                                {val.name}
-                              </ListItemText>
-                            </ListItem>
+                              <Tooltip title={val.description}>
+                                <ListItem button onClick={(e) => handleChange(e, i)}>
+                                  <ListItemText>
+                                    {val.name}
+                                  </ListItemText>
+                                </ListItem>
+                              </Tooltip>
                             <Divider />
                           </Col>
                           <Col numColSpan={1}>
@@ -443,16 +478,16 @@ function App() {
               <div style={{ padding: "5px" }}></div>
               <Accordion>
                 <AccordionHeader>
-                  Suspicion Suggestions
+                  Investigate me!
                 </AccordionHeader>
                 <AccordionBody>
                   <List sx={style} aria-label="mailbox folders">
                     {
                       suspiciongroups.map((val, i) =>
                         <Grid className="gap-2">
-                          <ListItem button onClick={(e) => handleSusChange(e, i)}>
+                          <ListItem button onClick={(e) => handleSusChange(e, val.nodeId)}>
                             {
-                              val.index < 4 ? <ListItemText> Node {val.index + 1} </ListItemText> : <ListItemText> Suspicion Node {val.index - 3} </ListItemText>
+                              <ListItemText> {val.name} </ListItemText>
                             }
                           </ListItem>
                           <Divider />
@@ -462,22 +497,22 @@ function App() {
                   </List>
                 </AccordionBody>
               </Accordion>
-              <Box sx={{ height: 720, transform: 'translateZ(0px)', flexGrow: 1 }}>
-                <SpeedDial
-                  ariaLabel="SpeedDial basic"
-                  sx={{ position: 'absolute', bottom: 16, right: 16 }}
-                  icon={<SpeedDialIcon />}
-                >
-                  {actions.map((action) => (
-                    <SpeedDialAction
-                      key={action.name}
-                      icon={action.icon}
-                      tooltipTitle={action.name}
-                      onClick={() => handleDialClick(action.name)}
-                    />
-                  ))}
-                </SpeedDial>
-              </Box>
+              <SpeedDial
+            ariaLabel="SpeedDial basic"
+            sx={{ position: 'absolute', bottom: 16, right: 16}}
+            icon={<SpeedDialIcon />}
+          >
+            {actions.map((action) => (
+              <SpeedDialAction
+                key={action.name}
+                icon={action.icon}
+                tooltipTitle={action.name}
+                onClick={() => handleDialClick(action.name)}
+              />
+            ))}
+            <input type="file" style={{display: 'none'}} ref={fileInput} onChange={handleImport} accept=".json" />
+          </SpeedDial>
+                            </Card>
             </Col>
           </Grid>
         </header>
