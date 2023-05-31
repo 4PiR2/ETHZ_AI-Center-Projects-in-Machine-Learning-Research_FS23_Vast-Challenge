@@ -107,14 +107,14 @@ function App() {
   };
 
 
-  const [showGraph, setShowGraph] = useState("1");
+  const [showGraph, setShowGraph] = useState("3");
   const [counter, setCounter] = useState(2);
   const [nodegroups, setNodeGroups] = useState([{ index: 0, name: "", description: "" }]);
   const [suspiciongroups, setSuspicionGroups] = useState([
-    { index: 0, name: "oceanfront oasis inc carriers", nodeId: "oceanfront oasis inc carriers|3172"},
-    { index: 1, name: "mar de la vida ojsc", nodeId: "mar de la vida ojsc|3177"},
-    { index: 2, name: "979893388", nodeId: "979893388|901"},
-    { index: 3, name: "8327", nodeId: "8327|386"},
+    { index: 0, name: "oceanfront oasis inc carriers", nodeId: "oceanfront oasis inc carriers|3172" },
+    { index: 1, name: "mar de la vida ojsc", nodeId: "mar de la vida ojsc|3177" },
+    { index: 2, name: "979893388", nodeId: "979893388|901" },
+    { index: 3, name: "8327", nodeId: "8327|386" },
   ]);
 
   const [drawerstate, setDrawerState] = useState(false);
@@ -236,7 +236,7 @@ function App() {
     //@ts-ignore
     window.savedGraphs[idx] = newData;
     //@ts-ignore
-    setNodeGroups([...nodegroups, { index: idx, name: n, description: d}]);
+    setNodeGroups([...nodegroups, { index: idx, name: n, description: d }]);
   }
   window.saveView = handleClick
 
@@ -374,12 +374,13 @@ function App() {
                   </Typography>
                   <Metric>Graph Visualisation on Vast Challenge 2023</Metric>
                   <TabList
-                    defaultValue="1"
+                    defaultValue="3"
                     onValueChange={(value) => setShowGraph(value)}
                     className="mt-6"
                   >
                     <Tab value="1" id="detailed_button" text="Detailed" />
-                    <Tab value="2" id="overview_button" text="Overview" style={{visibility: "hidden"}} />
+                    <Tab value="2" id="overview_button" text="Overview" style={{ visibility: "hidden" }} />
+                    <Tab value="3" id="user_tip" text="Use Tips"/>
                   </TabList>
                 </>
                 <div>
@@ -388,18 +389,6 @@ function App() {
                       display: showGraph === "1" ? "block" : "none",
                     }}
                   >
-                    <Box sx={{ width: 500 }} style={{ paddingTop: "8px" }}>
-                      <Popper open={anopen} anchorEl={anchorElan} placement={anplacement} transition>
-                        {({ TransitionProps }) => (
-                          <Fade {...TransitionProps} timeout={350}>
-                            <Paper>
-                              <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
-                            </Paper>
-                          </Fade>
-                        )}
-                      </Popper>
-                      <Button variant="secondary" onClick={handleClickAN('bottom-start')}>Use Tips</Button>
-                    </Box>
                     <iframe scrolling="no"
                       src="./detailedGraphView.html"
                       width="100%"
@@ -408,44 +397,52 @@ function App() {
                   </div>
                   <div
                     style={{
-                      display: showGraph === "1" ? "none" : "block",
+                      display: showGraph === "2" ?  "block" : "none",
                     }}
                   >
-                    <Box sx={{ width: 500 }} style={{ paddingTop: "8px", paddingBottom: "8px" }}>
-                      <Popper open={ddopen} anchorEl={ddanchorEl} placement={ddplacement} transition>
-                        {({ TransitionProps }) => (
-                          <Fade {...TransitionProps} timeout={350}>
-                            <Paper>
-                              <Typography sx={{ p: 2 }}>We can add more user guidances here for this section. Reclick the button to close it.</Typography>
-                            </Paper>
-                          </Fade>
-                        )}
-                      </Popper>
-                      <Button variant="secondary" onClick={handleClickDD('bottom-start')}>Use Tips</Button>
-                    </Box>
                     <iframe id="cosmos" src="./cosmos.html" scrolling="no" width="100%" height="1000px"></iframe>
+                  </div>
+                  <div
+                    style={{
+                      display: showGraph === "3" ? "block" : "none",
+                    }}
+                  >
+                    <Grid numCols={2} className="gap-2" style={{paddingTop:"5px"}}>
+                      <Col numColSpan={1}>
+                        <Card>
+                          <Metric>Use Tips for Overview Tab</Metric>
+                          <Text>Contents...</Text>
+                        </Card>
+                      </Col>
+                      <Col numColSpan={1}>
+                        <Card>
+                          <Metric>Use Tips for Detailed Tab</Metric>
+                          <Text>Contents...</Text>
+                        </Card>
+                      </Col>
+                    </Grid>
                   </div>
                 </div>
               </div>
             </Col>
             <Col numColSpan={3} numColSpanLg={3} id="right_panel">
-              <Card style={{height: "100vh"}}>
-              <Card>
-                <>
-                  <Typography>
-                    <text style={{ color: "grey" }}>General Information</text>
-                    <Tooltip title="We can add more tooltips on the graph visualisations here..." placement="right">
-                      <HelpOutlineRoundedIcon />
-                    </Tooltip>
-                  </Typography>
-                  <Metric>Groups Panel</Metric>
-                </>
-                <List sx={style} aria-label="mailbox folders">
-                  {
-                    nodegroups.map((val, i) => {
-                      return val.index > 0 ?
-                        <Grid numCols={5} className="gap-2">
-                          <Col numColSpan={4}>
+              <Card style={{ height: "100vh" }}>
+                <Card>
+                  <>
+                    <Typography>
+                      <text style={{ color: "grey" }}>General Information</text>
+                      <Tooltip title="We can add more tooltips on the graph visualisations here..." placement="right">
+                        <HelpOutlineRoundedIcon />
+                      </Tooltip>
+                    </Typography>
+                    <Metric>Groups Panel</Metric>
+                  </>
+                  <List sx={style} aria-label="mailbox folders">
+                    {
+                      nodegroups.map((val, i) => {
+                        return val.index > 0 ?
+                          <Grid numCols={5} className="gap-2">
+                            <Col numColSpan={4}>
                               <Tooltip title={val.description}>
                                 <ListItem button onClick={(e) => handleChange(e, i)}>
                                   <ListItemText>
@@ -453,84 +450,84 @@ function App() {
                                   </ListItemText>
                                 </ListItem>
                               </Tooltip>
-                            <Divider />
-                          </Col>
-                          <Col numColSpan={1}>
-                            <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete(i)} />
-                          </Col>
-                        </Grid> : <div></div>
-                    }
-                    )
-                  }
-                  <ListItem>
-                    <Button
-                      size="lg"
-                      icon={Add}
-                      iconPosition='left'
-                      variant="light"
-                      onClick={() => { setOpenDialog(true) }}
-                    >
-                      Save view
-                    </Button>
-                  </ListItem>
-                </List>
-              </Card>
-              <div style={{ padding: "5px" }}></div>
-              <Accordion>
-                <AccordionHeader>
-                  Investigate me!
-                </AccordionHeader>
-                <AccordionBody>
-                  <List sx={style} aria-label="mailbox folders">
-                    {
-                      suspiciongroups.map((val, i) =>
-                        <Grid className="gap-2">
-                          <ListItem button onClick={(e) => handleSusChange(e, val.nodeId)}>
-                            {
-                              <ListItemText> {val.name} </ListItemText>
-                            }
-                          </ListItem>
-                          <Divider />
-                        </Grid>
+                              <Divider />
+                            </Col>
+                            <Col numColSpan={1}>
+                              <Button icon={DeleteOutlineRounded} variant="light" iconPosition='right' onClick={() => handleDelete(i)} />
+                            </Col>
+                          </Grid> : <div></div>
+                      }
                       )
                     }
+                    <ListItem>
+                      <Button
+                        size="lg"
+                        icon={Add}
+                        iconPosition='left'
+                        variant="light"
+                        onClick={() => { setOpenDialog(true) }}
+                      >
+                        Save view
+                      </Button>
+                    </ListItem>
                   </List>
-                </AccordionBody>
-              </Accordion>
-              <SpeedDial
-            ariaLabel="SpeedDial basic"
-            sx={{ position: 'absolute', bottom: 16, right: 16}}
-            icon={<SpeedDialIcon />}
-          >
-            {actions.map((action) => (
-              <SpeedDialAction
-                key={action.name}
-                icon={action.icon}
-                tooltipTitle={action.name}
-                onClick={() => handleDialClick(action.name)}
-              />
-            ))}
-            <input type="file" style={{display: 'none'}} ref={fileInput} onChange={handleImport} accept=".json" />
-          </SpeedDial>
-                            </Card>
+                </Card>
+                <div style={{ padding: "5px" }}></div>
+                <Accordion>
+                  <AccordionHeader>
+                    Investigate me!
+                  </AccordionHeader>
+                  <AccordionBody>
+                    <List sx={style} aria-label="mailbox folders">
+                      {
+                        suspiciongroups.map((val, i) =>
+                          <Grid className="gap-2">
+                            <ListItem button onClick={(e) => handleSusChange(e, val.nodeId)}>
+                              {
+                                <ListItemText> {val.name} </ListItemText>
+                              }
+                            </ListItem>
+                            <Divider />
+                          </Grid>
+                        )
+                      }
+                    </List>
+                  </AccordionBody>
+                </Accordion>
+                <SpeedDial
+                  ariaLabel="SpeedDial basic"
+                  sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                  icon={<SpeedDialIcon />}
+                >
+                  {actions.map((action) => (
+                    <SpeedDialAction
+                      key={action.name}
+                      icon={action.icon}
+                      tooltipTitle={action.name}
+                      onClick={() => handleDialClick(action.name)}
+                    />
+                  ))}
+                  <input type="file" style={{ display: 'none' }} ref={fileInput} onChange={handleImport} accept=".json" />
+                </SpeedDial>
+              </Card>
             </Col>
           </Grid>
         </header>
         <div height={window.innerHeight} id='left_panel'>
-      {isResizing && <FullScreenOverlay />}
-          <ResizableBox 
-        width={340}
-        height={window.innerHeight}
-        // handleSize = {[20, 100]}
-        minConstraints={[160, window.innerHeight]}
-        maxConstraints={[window.innerWidth / 1.3, window.innerHeight]}
-        resizeHandles={['e']}
-        onResizeStart={handleResizeStart}
-        onResizeStop={handleResizeStop}
-      >
-          <DrawerComponent drawerState={drawerstate} toggleDrawer={toggleDrawer}
-></DrawerComponent>
-        </ResizableBox>
+          {isResizing && <FullScreenOverlay />}
+          <ResizableBox
+            width={340}
+            height={window.innerHeight}
+            // handleSize = {[20, 100]}
+            minConstraints={[160, window.innerHeight]}
+            maxConstraints={[window.innerWidth / 1.3, window.innerHeight]}
+            resizeHandles={['e']}
+            onResizeStart={handleResizeStart}
+            onResizeStop={handleResizeStop}
+          >
+            <DrawerComponent drawerState={drawerstate} toggleDrawer={toggleDrawer}
+            ></DrawerComponent>
+          </ResizableBox>
         </div>
       </main>
     </div>
