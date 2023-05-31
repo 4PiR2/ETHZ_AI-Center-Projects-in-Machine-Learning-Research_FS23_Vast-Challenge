@@ -3,7 +3,7 @@ import {LabelOptions, LabelRenderer} from "@interacta/css-labels";
 import * as neo4j from 'neo4j-driver';
 import "./styles.css";
 
-export {graph, graphNodes, selected_nodes, detailedView_selected_nodes, exec_query, process_records, select_by_rect, update_selected_nodes, set_paused, set_is_add_nodes, is_querying};
+export {graph, graphNodes, selected_nodes, exec_query, process_records, select_by_rect, update_selected_nodes, set_paused, set_is_add_nodes, is_querying};
 
 type Node = {
     id: string;
@@ -60,7 +60,7 @@ class CosmosLabels<
                     x: screenPosition[0],
                     y: screenPosition[1] - (radius + 2.),
                     opacity: 1.,
-                    color: n.m? '#ff0000ff' : '#000000ff'
+                    color: n.m == 1? '#ff0000ff' : '#000000ff'
                 });
             }
         });
@@ -238,7 +238,7 @@ function process_records(records: any) {
             name: node.name,
             n: node.n,
             c: node.c,
-            m: node.m,
+            m: node.m.low,
             degree_in: 0,
             degree_out: 0,
             weight_in: 1.,
@@ -313,8 +313,6 @@ function select_by_rect(left: number, top: number, right: number, bottom: number
 
 function update_selected_nodes(nodes: any) {
     selected_nodes = nodes;
-    //@ts-ignore
-    detailedView_selected_nodes = selected_nodes.map(node => parseInt(node.id.slice(1),10));
     //@ts-ignore
     graph.setConfig({nodeColor: (n) => (selected_nodes.filter((m: Node) => n.id == m.id).length ? '#1f77b4' : '#000000') + (n.id == 'U9999' ? '00' : 'ff')});
 }

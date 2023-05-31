@@ -19,6 +19,8 @@ setInterval(check_overview_status, 100);
 function set_selected_nodes(uids: string[]) {
     // @ts-ignore
     parentWindow.selected_nodes = uids;
+    //@ts-ignore
+    parentWindow.detailedView_selected_nodes = uids.map(uid => parseInt(uid.slice(1),10));
     update_selected_nodes(graphNodes.filter((n) => uids.indexOf(n.id) > -1));
 }
 

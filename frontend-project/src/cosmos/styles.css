@@ -40,7 +40,7 @@ body {
 
 #labels {
   --css-label-background-color: #ffffff00;
-  visibility: hidden;
+  /*visibility: hidden;*/
 }
 
 #overlay {

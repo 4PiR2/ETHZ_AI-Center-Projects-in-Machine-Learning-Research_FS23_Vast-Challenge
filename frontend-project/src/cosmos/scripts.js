@@ -26,7 +26,7 @@ export function sync0() {
         }
     }
     all_data.nodes = nodes;
-    window.parent.dataToRadial(window.parent.nodeIndexesToData(detailedView_selected_nodes));
+    window.parent.dataToRadial(window.parent.nodeIndexesToData(window.parent.detailedView_selected_nodes));
 }
 
 window.parent.document.getElementById('detailed_button').addEventListener('click', () =>  change_panel());

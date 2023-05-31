@@ -8,6 +8,10 @@ from tqdm import tqdm
 def load_mc1(json_path: str):
     entities = ['FishEye International', 'Mar de la Vida OJSC', 979893388, 'Oceanfront Oasis Inc Carriers', 8327]
 
+    with open('name_oi.txt', 'r') as f:
+        name_oi = f.readlines()
+    name_oi = [s.strip() for s in name_oi]
+
     with open(json_path, 'r') as f:
         data = json.load(f)
 
@@ -28,6 +32,12 @@ def load_mc1(json_path: str):
         node['n'] = nids[node['type']]
         node['c'] = cids[node['country']]
         node['m'] = node['id'] in entities
+        if node['id'] in entities:
+            node['m'] = 1
+        elif node['id'] in name_oi:
+            node['m'] = 2
+        else:
+            node['m'] = 0
         node['name'] = node['id']
         del node['id']
 
@@ -54,8 +64,10 @@ def add_to_db(nodes, edges):
         #     tags.append(node['type'])
         # if node['country']:
         #     tags.append(node['country'])
-        if node['m']:
-            tags.append('M0')
+        if node['m'] == 1:
+            tags.append('M1')
+        elif node['m'] == 2:
+            tags.append('M2')
         # result = tx.run(
         #     'CREATE (n' + ''.join([f':{tag}' for tag in tags]) + ') SET '
         #     + ', '.join([f"n.{k}=${k}" for k in node.keys()]), **node)

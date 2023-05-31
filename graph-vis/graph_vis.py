@@ -323,8 +323,46 @@ def w2vec():
     a = 0
 
 
+def stat():
+    g = load_mc1('../data/MC1.json')
+
+    weights = []
+    edges = g.edges
+    for k, v in edges.items():
+        for e in v:
+            weights.append(e.eattrs['weight'])
+    weights = torch.tensor(weights)
+    weights[weights < .8] = .79
+    plt.hist(weights.detach().cpu().numpy(), bins=21, range=(.79, 1.))
+    plt.xticks([i * .01 for i in range(80, 101, 5)], ['$\leq 0.80$'] + [f"{i * .01 : .2f}" for i in range(85, 101, 5)])
+    plt.xlim(.79, 1.)
+    plt.xlabel('weight')
+    plt.yticks(range(0, 801, 100), [str(i) for i in range(0, 801, 100)])
+    plt.ylim(0)
+    plt.ylabel('count')
+    plt.title('Histogram of Edge Weights')
+    plt.savefig('edge_weight.svg', bbox_inches='tight')
+    plt.show()
+
+    adj_mat = g.get_adjacency_mat(weighted=False)
+    degree_in = adj_mat.sum(dim=0)
+    degree_out = adj_mat.sum(dim=1)
+    degree = degree_in + degree_out
+    degree[degree > 50] = 50 + 1
+    plt.hist(degree.detach().cpu().numpy(), bins=int(degree.max()))
+    plt.xticks(range(0, 51, 5), [str(i) for i in range(0, 50, 5)] + ['$\geq 50$'])
+    plt.xlim(0, int(degree.max()))
+    plt.xlabel('degree')
+    plt.yscale('log')
+    plt.yticks(list(range(1, 10, 1)) + list(range(10, 100, 10)) + list(range(100, 1001, 100)),
+               ['1'] + [''] * 8 + ['10'] + [''] * 8 + ['100'] + [''] * 8 + ['1000'])
+    plt.ylabel('count')
+    plt.title('Histogram of Node Degrees')
+    plt.savefig('node_degree.svg', bbox_inches='tight')
+    plt.show()
+
 def main():
-    w2vec()
+    # w2vec()
     g = load_mc1('../data/MC1.json')
     g = g.sub_graph(g.connected_components()[0])
     # adj_mat = g.get_adjacency_mat(weighted=False)
