@@ -4,6 +4,7 @@ import {graphNodes, select_by_rect, update_selected_nodes, is_querying} from "./
 const parentWindow: Window & typeof globalThis = window.parent;
 
 const right_panel = parentWindow.document.getElementById('right_panel') as HTMLDivElement;
+const left_panel = parentWindow.document.getElementById('left_panel') as HTMLDivElement;
 const overview_button = parentWindow.document.getElementById('overview_button') as HTMLDivElement;
 
 function check_overview_status() {
@@ -20,7 +21,14 @@ function set_selected_nodes(uids: string[]) {
 }
 
 function sync1() {
-    right_panel.style.visibility = 'hidden';
+    // @ts-ignore
+    right_panel.style.pointerEvents = 'none';  /* Disables pointer events like clicking */
+    // @ts-ignore
+    right_panel.style.opacity = 0.5;
+    // @ts-ignore
+    left_panel.style.pointerEvents = 'none';  /* Disables pointer events like clicking */
+    // @ts-ignore
+    left_panel.style.opacity = 0.5;
     // @ts-ignore
     let data = parentWindow.graph.save();
     let nodes = data.nodes;

@@ -516,7 +516,7 @@ function App() {
             </Col>
           </Grid>
         </header>
-        <div height={window.innerHeight}>
+        <div height={window.innerHeight} id='left_panel'>
       {isResizing && <FullScreenOverlay />}
           <ResizableBox 
         width={340}

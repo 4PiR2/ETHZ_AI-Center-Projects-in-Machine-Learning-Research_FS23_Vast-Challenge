@@ -2,7 +2,15 @@ import {getAllData} from '../detailedGraphView/data'
 
 export function sync0() {
     const right_panel = window.parent.document.getElementById('right_panel');
-    right_panel.style.visibility = 'visible';
+    const left_panel = window.parent.document.getElementById('left_panel');
+    right_panel.style.pointerEvents = 'all';  /* Disables pointer events like clicking */
+    // @ts-ignore
+    right_panel.style.opacity = 1.0;
+    // @ts-ignore
+    left_panel.style.pointerEvents = 'all';  /* Disables pointer events like clicking */
+    // @ts-ignore
+    left_panel.style.opacity = 1.0;
+    // @ts-ignore
     var all_data = getAllData();
     var selected_nodes = window.parent.selected_nodes;
     var nodes = [];
