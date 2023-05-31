@@ -417,7 +417,7 @@ function App() {
                   </List>
                 </Card>
                 <div style={{ padding: "5px" }}></div>
-                <Accordion>
+                <Accordion expanded>
                   <AccordionHeader>
                     Investigate me!
                   </AccordionHeader>
