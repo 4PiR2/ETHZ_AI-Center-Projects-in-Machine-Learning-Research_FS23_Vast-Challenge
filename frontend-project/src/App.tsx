@@ -15,9 +15,6 @@ import Divider from '@mui/material/Divider';
 import { Button } from "@tremor/react";
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
-import Popper, { PopperPlacementType } from '@mui/material/Popper';
-import Fade from '@mui/material/Fade';
-import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -47,7 +44,7 @@ import {
 } from "@tremor/react";
 
 import { useState } from "react";
-import { Add, CheckCircleRounded, DeleteOutlineRounded, DoubleArrow } from '@mui/icons-material';
+import { Add, CheckCircleRounded, DeleteOutlineRounded } from '@mui/icons-material';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 
 //@ts-ignore
@@ -109,7 +106,7 @@ function App() {
 
   const [showGraph, setShowGraph] = useState("3");
   const [counter, setCounter] = useState(2);
-  const [nodegroups, setNodeGroups] = useState([{ index: 0, name: "", description: "" }]);
+  const [nodegroups, setNodeGroups] = useState([{ index: 0, name: "", description: "", email:"" }]);
   const [suspiciongroups, setSuspicionGroups] = useState([
     { index: 0, name: "oceanfront oasis inc carriers", nodeId: "oceanfront oasis inc carriers|3172" },
     { index: 1, name: "mar de la vida ojsc", nodeId: "mar de la vida ojsc|3177" },
@@ -118,14 +115,7 @@ function App() {
   ]);
 
   const [drawerstate, setDrawerState] = useState(false);
-  const [anchorElan, setAnchorElAN] = useState<HTMLButtonElement | null>(null);
-  const [anopen, setANOpen] = useState(false);
-  const [anplacement, setANPlacement] = useState<PopperPlacementType>();
-  const [ddanchorEl, setAnchorElDD] = useState<HTMLButtonElement | null>(null);
-  const [ddopen, setDDOpen] = useState(false);
-  const [ddplacement, setDDPlacement] = useState<PopperPlacementType>();
   const [opendialog, setOpenDialog] = useState(false);
-  const [opendialogemail, setOpenDialogShareEmail] = useState(false);
   const [email, setEmailName] = useState(String);
   const [nodename, setNodeName] = useState(String);
   const [nodedescription, setNodeDescription] = useState(String);
@@ -192,51 +182,27 @@ function App() {
       var dataStr =
         'data:vast/json;charset=utf-8,' +
         encodeURIComponent(JSON.stringify({ nodegroups: nodegroups, graphs: window.savedGraphs }));
-      if (email != "") {
-        const download = document.createElement('a');
-        download.setAttribute('href', dataStr);
-        download.setAttribute('download', 'analysis_' + email + '.json');
-        document.body.appendChild(download);
-        download.click();
-        download.remove();
-      } else {
-        const download = document.createElement('a');
-        download.setAttribute('href', dataStr);
-        download.setAttribute('download', 'analysis_' + Date().toLocaleString() + '.json');
-        document.body.appendChild(download);
-        download.click();
-        download.remove();
-      }
+      const download = document.createElement('a');
+      download.setAttribute('href', dataStr);
+      download.setAttribute('download', 'analysis_' + Date().toLocaleString() + '.json');
+      document.body.appendChild(download);
+      download.click();
+      download.remove();
 
     } else if (n === 'Import') {
       fileInput.current.click();
     }
   }
 
-  const handleClickAN =
-    (newPlacement: PopperPlacementType) =>
-      (event: React.MouseEvent<HTMLButtonElement>) => {
-        setAnchorElAN(event.currentTarget);
-        setANOpen((prev) => anplacement !== newPlacement || !prev);
-        setANPlacement(newPlacement);
-      };
 
-  const handleClickDD =
-    (newPlacement: PopperPlacementType) =>
-      (event: React.MouseEvent<HTMLButtonElement>) => {
-        setAnchorElDD(event.currentTarget);
-        setDDOpen((prev) => ddplacement !== newPlacement || !prev);
-        setDDPlacement(newPlacement);
-      };
-
-  const handleClick = (idx: number, n: String, d: String) => {
+  const handleClick = (idx: number, n: String, d: String, em: String) => {
     //@ts-ignore
     const graphToSave = window.graph.save();
     const newData = JSON.parse(JSON.stringify(graphToSave));
     //@ts-ignore
     window.savedGraphs[idx] = newData;
     //@ts-ignore
-    setNodeGroups([...nodegroups, { index: idx, name: n, description: d }]);
+    setNodeGroups([...nodegroups, { index: idx, name: n, description: d, email: em }]);
   }
   window.saveView = handleClick
 
@@ -246,6 +212,11 @@ function App() {
     const deleteVal = [...nodegroups]
     deleteVal.splice(i, 1)
     setNodeGroups(deleteVal)
+  }
+  const clearOutput = () => {
+    setNodeDescription("I think it is...");
+    setEmailName("");
+    setNodeName("");
   }
 
   const [isResizing, setIsResizing] = useState(false);
@@ -275,35 +246,6 @@ function App() {
 
   return (
     <div>
-      <BootstrapDialog
-        onClose={() => { setOpenDialogShareEmail(false) }}
-        aria-labelledby="customised-dialog-title"
-        open={opendialogemail}
-      >
-        <BootstrapDialogTitle id="customised-dialog-title" onClose={() => { setOpenDialogShareEmail(false) }}>
-          Want to be informed of the following updates?
-        </BootstrapDialogTitle>
-        <DialogContent dividers>
-          <Typography gutterBottom>
-            Please provide your email for us! We will not use it for the other use!
-          </Typography>
-          <Box
-            component="form"
-            sx={{
-              '& .MuiTextField-root': { m: 1, width: '50ch' },
-            }}
-            noValidate
-            autoComplete="off"
-          >
-            <TextInput id="standard-basic" value={email} onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setEmailName(event.target.value); }} />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button autoFocus variant="secondary" size="lg" onClick={() => { setOpenDialogShareEmail(false) }}>
-            Submit
-          </Button>
-        </DialogActions>
-      </BootstrapDialog>
       <BootstrapDialog
         onClose={() => { setOpenDialog(false) }}
         aria-labelledby="customized-dialog-title"
@@ -344,6 +286,17 @@ function App() {
               value={nodedescription}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setNodeDescription(event.target.value); }}
             />
+          <Typography gutterBottom>
+            Do you want to be informed of the further updates? If so, please provide us with your email address!
+          </Typography>
+          <Box
+          component="form"
+          sx={{ '& > :not(style)': { m: 1, width: '30ch' }, }}
+          noValidate
+          autoComplete="off"
+        >
+          <TextInput id="standard-basic" value={email} onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setEmailName(event.target.value); }} />
+        </Box>
           </Box>
           <Callout
             className="mt-4"
@@ -355,7 +308,7 @@ function App() {
           </Callout>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus variant="secondary" size="lg" onClick={() => { setCounter(counter + 1); handleClick(counter, nodename, nodedescription); setOpenDialog(false) }}>
+          <Button autoFocus variant="secondary" size="lg" onClick={() => { setCounter(counter + 1); handleClick(counter, nodename, nodedescription, email); clearOutput(); setOpenDialog(false) }}>
             Save changes
           </Button>
         </DialogActions>
