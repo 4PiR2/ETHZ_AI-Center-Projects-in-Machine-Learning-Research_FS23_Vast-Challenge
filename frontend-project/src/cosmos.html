@@ -14,7 +14,7 @@
       <div class="action">
         <button id="filter_button">Filter</button>
         <select name="src" id="filter_src">
-          <option value="">any src node</option>
+          <option value="">any source node</option>
           <option value=":M0">?</option>
           <option value=":N1">company</option>
           <option value=":N2">event</option>
@@ -32,7 +32,7 @@
           <option value=":E4">partnership</option>
         </select>
         <select name="tgt" id="filter_tgt">
-          <option value="">any tgt node</option>
+          <option value="">any target node</option>
           <option value=":M0">?</option>
           <option value=":N1">company</option>
           <option value=":N2">event</option>
@@ -43,8 +43,9 @@
           <option value=":N7">political_organization</option>
         </select>
       </div>
-      <div class="action" id="select">Lasso Mode</div>
-      <div class="action" id="pause">Pause</div>
+      <div class="action" id="select">Selection Mode</div>
+      <div class="action" id="sync0">Detailed View &lt;&lt;</div>
+      <div class="action" id="pause">Pause Animation</div>
       <div class="action" id="wait" style="visibility: hidden; color: red">Wait!</div>
       <div class="action" id="edit" style="visibility: hidden;">Addition Mode (Click to Toggle to Removal Mode)</div>
       <div class="action" style="visibility: hidden;"><textarea id="freeform" name="freeform" rows="4" cols="50">MATCH (n) OPTIONAL MATCH (n)-[r]-() RETURN n, r;</textarea></div>

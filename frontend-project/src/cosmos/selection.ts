@@ -6,10 +6,12 @@ const parentWindow: Window & typeof globalThis = window.parent;
 const right_panel = parentWindow.document.getElementById('right_panel') as HTMLDivElement;
 const left_panel = parentWindow.document.getElementById('left_panel') as HTMLDivElement;
 const overview_button = parentWindow.document.getElementById('overview_button') as HTMLDivElement;
+const detailed_button = parentWindow.document.getElementById('detailed_button') as HTMLDivElement;
 
 function check_overview_status() {
     // @ts-ignore
     overview_button.style.visibility = is_querying ? 'hidden' : 'visible';
+    // detailed_button.style.visibility = is_querying ? 'hidden' : 'visible';
 }
 
 setInterval(check_overview_status, 100);

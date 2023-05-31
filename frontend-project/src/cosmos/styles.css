@@ -19,7 +19,7 @@ body {
   position: absolute;
   top: 10px;
   left: 10px;
-  color: #ccc;
+  color: #000000ff;
 }
 
 .actions-header {
@@ -29,8 +29,8 @@ body {
 
 .action {
   margin-left: 20pt;
-  font-size: 10pt;
-  text-decoration: underline;
+  font-size: 12pt;
+  /*text-decoration: underline;*/
   cursor: pointer;
   user-select: none;
   position: relative;

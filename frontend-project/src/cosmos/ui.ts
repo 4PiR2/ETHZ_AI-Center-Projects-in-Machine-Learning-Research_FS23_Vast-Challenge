@@ -1,4 +1,4 @@
-import {set_paused, set_is_add_nodes, exec_query, process_records} from "./graph";
+import {set_paused, set_is_add_nodes, exec_query, process_records, is_querying} from "./graph";
 
 // Start / Pause
 const pauseButton = document.getElementById("pause") as HTMLDivElement;
@@ -8,9 +8,9 @@ function togglePause() {
     isPaused = !isPaused;
     set_paused(isPaused);
     if (isPaused) {
-        pauseButton.textContent = "Start";
+        pauseButton.textContent = "Start Animation";
     } else {
-        pauseButton.textContent = "Pause";
+        pauseButton.textContent = "Pause Animation";
     }
 }
 
@@ -38,12 +38,12 @@ let selection_mode = false;
 function enable_selection() {
     selection_mode = !selection_mode;
     if (selection_mode) {
-        selection_button.innerHTML = 'Exit Lasso Mode';
+        selection_button.innerHTML = 'Exit Selection Mode';
         canvas.width = canvas_graph.width;
         canvas.height = canvas_graph.height;
         canvas.style.visibility = 'visible';
     } else {
-        selection_button.innerHTML = 'Lasso Mode';
+        selection_button.innerHTML = 'Selection Mode';
         canvas.style.visibility = 'hidden';
     }
 }
@@ -73,6 +73,26 @@ function filter_query() {
     exec_query('neo4j', query, process_records);
     // @ts-ignore
     document.getElementById('wait').style.visibility = 'visible';
+    isPaused = false;
+    set_paused(isPaused);
+    pauseButton.textContent = "Pause Animation";
+    auto_pause_count = 0;
 }
 
 filter_button.addEventListener('click', () => filter_query())
+
+let auto_pause_count = 0;
+
+function auto_pause(count: number) {
+    if (is_querying) {
+        return;
+    }
+    if (auto_pause_count == count) {
+        isPaused = true;
+        set_paused(isPaused);
+        pauseButton.textContent = "Start Animation";
+    }
+    ++auto_pause_count;
+}
+
+setInterval(auto_pause, 100, 20);

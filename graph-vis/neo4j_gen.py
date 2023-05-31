@@ -82,6 +82,10 @@ def add_to_db(nodes, edges):
 
 def main():
     nodes, edges = load_mc1('../data/MC1.json')
+    # with open('data.csv', 'w') as f:
+    #     f.write('Source,Target\n')
+    #     for e in edges:
+    #         f.write(f"{e['s']},{e['t']}\n")
     add_to_db(nodes, edges)
 
 
