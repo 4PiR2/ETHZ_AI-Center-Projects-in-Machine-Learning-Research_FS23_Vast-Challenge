@@ -7,11 +7,6 @@ let isPaused = false;
 function togglePause() {
     isPaused = !isPaused;
     set_paused(isPaused);
-    if (isPaused) {
-        pauseButton.textContent = "Start Animation";
-    } else {
-        pauseButton.textContent = "Pause Animation";
-    }
 }
 
 pauseButton.addEventListener("click", togglePause);
@@ -38,12 +33,10 @@ let selection_mode = false;
 function enable_selection() {
     selection_mode = !selection_mode;
     if (selection_mode) {
-        selection_button.innerHTML = 'Exit Selection Mode';
         canvas.width = canvas_graph.width;
         canvas.height = canvas_graph.height;
         canvas.style.visibility = 'visible';
     } else {
-        selection_button.innerHTML = 'Selection Mode';
         canvas.style.visibility = 'hidden';
     }
 }
@@ -75,7 +68,6 @@ function filter_query() {
     document.getElementById('wait').style.visibility = 'visible';
     isPaused = false;
     set_paused(isPaused);
-    pauseButton.textContent = "Pause Animation";
     auto_pause_count = 0;
 }
 
@@ -90,7 +82,6 @@ function auto_pause(count: number) {
     if (auto_pause_count == count) {
         isPaused = true;
         set_paused(isPaused);
-        pauseButton.textContent = "Start Animation";
     }
     ++auto_pause_count;
 }

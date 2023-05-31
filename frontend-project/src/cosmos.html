@@ -43,9 +43,19 @@
           <option value=":N7">political_organization</option>
         </select>
       </div>
-      <div class="action" id="select">Selection Mode</div>
-      <div class="action" id="sync0">Detailed View &lt;&lt;</div>
-      <div class="action" id="pause">Pause Animation</div>
+      <div class="action">
+        <button id="sync0">Detailed View &lt;&lt;</button>
+        <label class="switch">
+          <input id="select" type="checkbox">
+          <span class="slider round"></span>
+        </label>
+        Selection Mode
+        <label class="switch">
+          <input id="pause" type="checkbox">
+          <span class="slider round"></span>
+        </label>
+        Animation
+      </div>
       <div class="action" id="wait" style="visibility: hidden; color: red">Wait!</div>
       <div class="action" id="edit" style="visibility: hidden;">Addition Mode (Click to Toggle to Removal Mode)</div>
       <div class="action" style="visibility: hidden;"><textarea id="freeform" name="freeform" rows="4" cols="50">MATCH (n) OPTIONAL MATCH (n)-[r]-() RETURN n, r;</textarea></div>
