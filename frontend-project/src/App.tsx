@@ -104,7 +104,7 @@ function App() {
   };
 
 
-  const [showGraph, setShowGraph] = useState("3");
+  const [showGraph, setShowGraph] = useState("2");
   const [counter, setCounter] = useState(2);
   const [nodegroups, setNodeGroups] = useState([{ index: 0, name: "", description: "", email:"" }]);
   const [suspiciongroups, setSuspicionGroups] = useState([
@@ -327,19 +327,18 @@ function App() {
                   </Typography>
                   <Metric>Graph Visualisation on Vast Challenge 2023</Metric>
                   <TabList
-                    defaultValue="3"
+                    defaultValue="2"
                     onValueChange={(value) => setShowGraph(value)}
                     className="mt-6"
                   >
-                    <Tab value="1" id="detailed_button" text="Detailed" />
-                    <Tab value="2" id="overview_button" text="Overview" style={{ visibility: "hidden" }} />
-                    <Tab value="3" id="user_tip" text="Use Tips"/>
+                    <Tab value="1" id="user_tip" text="Use Tips" />
+                    <Tab value="2" id="detailed_button" text="Detailed" />
+                    <Tab value="3" id="overview_button" text="Overview" style={{ visibility: "hidden" }}/>
                   </TabList>
                 </>
-                <div>
                   <div
                     style={{
-                      display: showGraph === "1" ? "block" : "none",
+                      display: showGraph === "2" ? "block" : "none",
                     }}
                   >
                     <iframe scrolling="no"
@@ -350,14 +349,14 @@ function App() {
                   </div>
                   <div
                     style={{
-                      display: showGraph === "2" ?  "block" : "none",
+                      display: showGraph === "3" ?  "block" : "none",
                     }}
                   >
                     <iframe id="cosmos" src="./cosmos.html" scrolling="no" width="100%" height="1000px"></iframe>
                   </div>
                   <div
                     style={{
-                      display: showGraph === "3" ? "block" : "none",
+                      display: showGraph === "1" ? "block" : "none",
                     }}
                   >
                     <Grid numCols={2} className="gap-2" style={{paddingTop:"5px"}}>
@@ -375,7 +374,6 @@ function App() {
                       </Col>
                     </Grid>
                   </div>
-                </div>
               </div>
             </Col>
             <Col numColSpan={3} numColSpanLg={3} id="right_panel">
