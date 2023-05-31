@@ -97,7 +97,6 @@ function handleMouseUp(event: MouseEvent) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Perform any actions you want with the selected region
-    // console.log("Selected region:", startX, startY, endX, endY);
     selected_nodes = select_by_rect(Math.min(startX, endX), Math.min(startY, endY), Math.max(startX, endX), Math.max(startY, endY));
     let uids: string[] = [];
     selected_nodes.forEach((n: any) => {

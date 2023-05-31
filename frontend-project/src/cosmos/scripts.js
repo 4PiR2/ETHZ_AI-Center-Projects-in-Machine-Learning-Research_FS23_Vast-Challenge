@@ -23,10 +23,7 @@ export function sync0() {
         }
     }
     all_data.nodes = nodes;
-    var graph = window.parent.graph;
-    graph.data(all_data);
-    graph.render();
-    graph.destroyLayout();
+    window.parent.dataToRadial(window.parent.nodeIndexesToData(detailedView_selected_nodes));
 }
 
 window.parent.document.getElementById('detailed_button').addEventListener('click', () =>  sync0());
