@@ -14,6 +14,8 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import { Button } from "@tremor/react";
 import Typography from '@mui/material/Typography';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
@@ -30,6 +32,10 @@ import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import React from 'react';
 import fishLenseLogo from './fishLense.svg';
+import multiselect from './multiselect.png';
+import rectselect from './rectselect.png';
+import adjmatrix from './adjmatrix.png';
+import contextmenu from './contextmenu.png';
 
 import {
   Accordion,
@@ -246,6 +252,13 @@ function App() {
   );
   document.body.style.overflow = "hidden"
 
+  const explainingImagesDetailed = [
+    { src: multiselect, caption: 'Press shift and left-click to select several nodes.' },
+    { src: rectselect, caption: 'Press shift and left-drag to select a rectangle of nodes' },
+    { src: contextmenu, caption: 'Right-click on a node to display available graph exploration tools for your selection.' },
+    { src: adjmatrix, caption: 'In the left side panel, click "Visualize Connectivity" to show an alternative graph display of your selected nodes.' },
+  ];
+
   return (
     <div>
       <BootstrapDialog
@@ -347,13 +360,23 @@ function App() {
                     <Grid numCols={2} className="gap-2" style={{paddingTop:"5px"}}>
                       <Col numColSpan={1}>
                         <Card>
-                          <Metric>Use Tips for Overview Tab</Metric>
-                          <Text>Contents...</Text>
+                          <Typography variant="h4">Detailed Tab</Typography>
+                          <List>
+                            {explainingImagesDetailed.map((image, index) => (
+                              <ListItem key={index}>
+                                <ListItemAvatar>
+                                  <Avatar variant="rounded" src={image.src} style={{width: 100,
+    height: 100}}/>
+                                </ListItemAvatar>
+                                <ListItemText primary={image.caption} style={{marginLeft: 10}}/>
+                              </ListItem>
+                            ))}
+                          </List>
                         </Card>
                       </Col>
                       <Col numColSpan={1}>
                         <Card>
-                          <Metric>Use Tips for Detailed Tab</Metric>
+                          <Typography variant="h4">Overview Tab</Typography>
                           <Text>Contents...</Text>
                         </Card>
                       </Col>
