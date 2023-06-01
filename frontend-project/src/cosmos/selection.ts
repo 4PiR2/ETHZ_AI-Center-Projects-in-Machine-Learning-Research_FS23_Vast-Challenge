@@ -7,6 +7,7 @@ const right_panel = parentWindow.document.getElementById('right_panel') as HTMLD
 const left_panel = parentWindow.document.getElementById('left_panel') as HTMLDivElement;
 const overview_button = parentWindow.document.getElementById('overview_button') as HTMLDivElement;
 const detailed_button = parentWindow.document.getElementById('detailed_button') as HTMLDivElement;
+const tip_button = parentWindow.document.getElementById('user_tip') as HTMLDivElement;
 
 function check_overview_status() {
     // @ts-ignore
@@ -44,6 +45,20 @@ function sync1() {
 }
 
 overview_button.addEventListener('click', () =>  sync1());
+
+function sync1_tip() {
+    // @ts-ignore
+    right_panel.style.pointerEvents = 'none';  /* Disables pointer events like clicking */
+    // @ts-ignore
+    right_panel.style.opacity = 0.5;
+    // @ts-ignore
+    left_panel.style.pointerEvents = 'none';  /* Disables pointer events like clicking */
+    // @ts-ignore
+    left_panel.style.opacity = 0.5;
+    // @ts-ignore
+}
+
+tip_button.addEventListener('click', () =>  sync1_tip());
 
 // Define canvas and context
 const canvas = document.getElementById("overlay") as HTMLCanvasElement;
