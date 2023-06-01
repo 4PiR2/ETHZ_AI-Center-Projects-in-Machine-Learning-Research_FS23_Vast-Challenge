@@ -216,7 +216,7 @@ function App() {
     setNodeGroups(deleteVal)
   }
   const clearOutput = () => {
-    setNodeDescription("I think it is...");
+    setNodeDescription("");
     setEmailName("");
     setNodeName("");
   }
@@ -254,7 +254,7 @@ function App() {
         open={opendialog}
       >
         <BootstrapDialogTitle id="customized-dialog-title" onClose={() => { setOpenDialog(false) }}>
-          Name your Choice!
+          Save your investigation!
         </BootstrapDialogTitle>
         <Box
           component="form"
@@ -262,15 +262,9 @@ function App() {
           noValidate
           autoComplete="off"
         >
-          <TextInput id="standard-basic" value={nodename} onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setNodeName(event.target.value); }} />
+          <TextInput id="standard-basic" placeholder="Name your investigation..." value={nodename} onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setNodeName(event.target.value); }} />
         </Box>
         <DialogContent dividers>
-          <Typography gutterBottom>
-            Please write some descriptions of your chosen clusters!
-          </Typography>
-          <Typography gutterBottom>
-            Why do you think it is a suspicious pattern of illegal fishing? What is the most important trace in this graph?
-          </Typography>
           <Box
             component="form"
             sx={{
@@ -289,7 +283,7 @@ function App() {
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setNodeDescription(event.target.value); }}
             />
           <Typography gutterBottom>
-            Do you want to be informed of the further updates? If so, please provide us with your email address!
+            Want to be mentioned in our challenge submission?
           </Typography>
           <Box
           component="form"
@@ -297,17 +291,9 @@ function App() {
           noValidate
           autoComplete="off"
         >
-          <TextInput id="standard-basic" value={email} onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setEmailName(event.target.value); }} />
+          <TextInput id="standard-basic" placeholder="abc@ethz.ch" value={email} onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setEmailName(event.target.value); }} />
         </Box>
           </Box>
-          <Callout
-            className="mt-4"
-            title="No critical system data"
-            icon={CheckCircleRounded}
-            color="teal"
-          >
-            All systems are currently within their default operating ranges.
-          </Callout>
         </DialogContent>
         <DialogActions>
           <Button autoFocus variant="secondary" size="lg" onClick={() => { setCounter(counter + 1); handleClick(counter, nodename, nodedescription, email); clearOutput(); setOpenDialog(false) }}>
