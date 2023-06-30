@@ -197,7 +197,7 @@ def load_mc1(json_path: str) -> G:
         for k in ['country', 'type']:
             if k not in node:
                 node[k] = ''
-        node['uid'] = nid2uid[node['id']] = f'#{len(nid2uid):>04}'
+        node['uid'] = nid2uid[node['id']] = f'U{len(nid2uid):>04}'
         node['ntid'] = ntids[node['type']]
         node['cid'] = cids[node['country']]
         node['*'] = node['id'] in entities
@@ -341,13 +341,15 @@ def stat():
     plt.ylim(0)
     plt.ylabel('count')
     plt.title('Histogram of Edge Weights')
-    plt.savefig('edge_weight.svg', bbox_inches='tight')
+    # plt.savefig('edge_weight.svg', bbox_inches='tight')
     plt.show()
 
     adj_mat = g.get_adjacency_mat(weighted=False)
     degree_in = adj_mat.sum(dim=0)
     degree_out = adj_mat.sum(dim=1)
     degree = degree_in + degree_out
+    order = degree.argsort()
+    node = g.nodes
     degree[degree > 50] = 50 + 1
     plt.hist(degree.detach().cpu().numpy(), bins=int(degree.max()))
     plt.xticks(range(0, 51, 5), [str(i) for i in range(0, 50, 5)] + ['$\geq 50$'])
@@ -364,6 +366,8 @@ def stat():
 def main():
     # w2vec()
     g = load_mc1('../data/MC1.json')
+    nodes, edges = g.to_df()
+    edges.to_csv('edges.csv')
     g = g.sub_graph(g.connected_components()[0])
     # adj_mat = g.get_adjacency_mat(weighted=False)
     # plt.imsave('main_cluster.png', adj_mat.bool().numpy())
