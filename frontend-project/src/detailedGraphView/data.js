@@ -149,3 +149,4 @@ export function getAllData() {
 
 window.parent.augmentNode = augmentNode;
 window.parent.augmentEdge = augmentEdge;
+window.parent.suspicion_scores = suspicion_scores;

@@ -21,6 +21,8 @@ import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import WarningIcon from '@mui/icons-material/Warning';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -36,6 +38,14 @@ import multiselect from './multiselect.png';
 import rectselect from './rectselect.png';
 import adjmatrix from './adjmatrix.png';
 import contextmenu from './contextmenu.png';
+import ToggleButton from '@mui/lab/ToggleButton';
+import ToggleButtonGroup from '@mui/lab/ToggleButtonGroup';
+import suspicion_scores from './suspicion_scores.json';
+import { Chart, registerables } from 'chart.js';
+import { scaleLinear } from 'd3';
+
+
+Chart.register(...registerables)
 
 import {
   Accordion,
@@ -51,7 +61,7 @@ import {
   Metric,
 } from "@tremor/react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Add, CheckCircleRounded, DeleteOutlineRounded } from '@mui/icons-material';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 
@@ -59,6 +69,35 @@ import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 window.savedGraphs = {};
 
 
+function transform(dict) {
+  let result = [];
+  let index = 0;
+  const entries = Object.entries(dict);
+  entries.sort((a, b) => {
+    if (a[0] < b[0]) {
+        return -1;
+    } else if (a[0] > b[0]) {
+        return 1;
+    } else {
+        return 0;
+    }
+  });
+  // // Sort the entries based on a custom function of the values
+  // entries.sort((a, b) => {
+  //   const valueA = a[1];
+  //   const valueB = b[1];
+    
+  //   // Custom sorting logic based on the values
+  //   return valueB - valueA;
+  // });
+  for (const [nodeId, _] of entries) {
+    let name = nodeId.split('|')[0];  // Extract name from nodeId
+    let suspiciousness = dict[nodeId];
+    result.push({ index, suspiciousness, name, nodeId });
+    index++;
+  }
+  return result;
+}
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -74,6 +113,169 @@ export interface DialogTitleProps {
   children?: React.ReactNode;
   onClose: () => void;
 }
+
+import { Bar } from 'react-chartjs-2';
+
+
+class BarChartWithButton extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      chartData: {
+        labels: [
+        'Company',
+        'Event',
+        'Location',
+        'Movement',
+        'Organization',
+        'Person',
+        'Political_organization',
+        'Vessel',
+        'Family relationships, out, fraction',
+        'Family relationships, in, fraction',
+        'Partnerships, out, fraction',
+        'Partnerships, in ,fraction',
+        'Outgoing fraction: membership',
+        'Incoming fraction: membership',
+        'Outgoing fraction: ownership',
+        'Incoming fraction: ownership',
+        'Incoming edges',
+        'Outgoing edges',
+        'Betweenness centrality',
+        'Pagerank'],
+        datasets: [{
+          label: 'Importance of features for node illegality',
+          data: [
+            0.23971944192235503,
+            0.21208654936861596,
+            0.0,
+            0.24814192753586592,
+            -0.17143348973739228,
+            -0.023198581533754228,
+            0.22017107649605233,
+            0.30851775762546485,
+            -0.4628879244447966,
+            -0.5180756557070315,
+            0.28570803263470756,
+            0.0,
+            -0.24142438840671115,
+            0.44937987540996455,
+            -0.288728108009589,
+            0.0,
+            0.0,
+            -0.2271008874994434,
+            0.0,
+            0.0
+          ],
+          borderWidth: 1
+        }]
+      },
+      bias: -6.309163569931193 
+    }
+    this.handleButtonClick = this.handleButtonClick.bind(this);
+
+  }
+
+  // componentDidUpdate(prevProps) {
+  //   // Typical usage, don't forget to compare the props if necessary
+  //   const m = this.new_most_illegal_nodes===undefined ? this.props.mostillegalnodes : this.new_most_illegal_nodes;
+  //   this.props.setMostIllegalNodes(m);
+  // }
+
+  handleButtonClick = async () => {
+    console.log("Handling CLICK")
+    const url = 'http://' + location.hostname + ':8000/api/v1/rerun_analysis';
+    const userVotes = window.iii === undefined ?  this.props.illegalIds : window.iii;
+    window.iii = undefined;
+    try {
+      const postData = userVotes; // replace with your actual node ids
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData ),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      // Update illegal node list
+      const setMostIllegalNodes = this.props.setMostIllegalNodes;
+      const new_most_illegal_nodes = transform(data.suspicion_scores);
+      setMostIllegalNodes(new_most_illegal_nodes);
+      window.new_most_illegal_nodes = data.suspicion_scores;
+      // this.new_most_illegal_nodes = new_most_illegal_nodes;
+      // console.log("new_most_illegal_nodes");
+      // console.log(new_most_illegal_nodes);
+      // const sleep = ms => new Promise(r => setTimeout(r, ms));
+      // useEffect(() => {
+      //   setMostIllegalNodes(new_most_illegal_nodes);
+      //   console.log("done setting nodes");
+      // }, []);
+      // await sleep(2000);
+      // Update tips coloring
+      const sgroups = [
+        { index: 0, suspiciousness: data.suspicion_scores["oceanfront oasis inc carriers|3172"], name: "oceanfront oasis inc carriers", nodeId: "oceanfront oasis inc carriers|3172" },
+        { index: 1, suspiciousness: data.suspicion_scores["mar de la vida ojsc|3177"], name: "mar de la vida ojsc", nodeId: "mar de la vida ojsc|3177" },
+        { index: 2, suspiciousness: data.suspicion_scores["979893388|901"], name: "979893388", nodeId: "979893388|901" },
+        { index: 3, suspiciousness: data.suspicion_scores["8327|386"], name: "8327", nodeId: "8327|386" }
+      ];
+      this.props.setSuspicionGroups(sgroups);
+      // // Update graph coloring
+      const colorScale = scaleLinear()
+      .domain([0, 1])
+      .range(['white', 'red']);
+      window.graph.getNodes().forEach(node => {
+        // Update the 'fill' style of each node
+        window.NODE = node;
+        graph.updateItem(node, {
+          style: {
+            fill: colorScale(data.suspicion_scores[node.getID()])
+          }
+        });
+      });
+      // //@ts-ignore
+      window.graph.refresh();
+      window.graph.fitView();
+      for (const [key, _] of Object.entries(window.suspicion_scores)) {
+        window.suspicion_scores[key] = data.suspicion_scores[key];
+      }
+      // Update state
+      this.setState(prevState => ({
+        chartData: {
+          ...prevState.chartData,
+          datasets: prevState.chartData.datasets.map((dataset, i) => 
+            i === 0 
+            ? { ...dataset, data: data.chartData }
+            : dataset
+          )
+        },
+        bias: data.bias
+      }));
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+  
+
+  render() {
+    return (
+      <div>
+        <Bar data={this.state.chartData} />
+        <p>Bias: {this.state.bias.toFixed(2)}</p>
+        <Tooltip title={"Recomputes the importance of features based on the user's node labels."}>
+        <Button id={this.props.id} onClick={this.handleButtonClick}>Rerun Analysis</Button>
+        </Tooltip>
+      </div>
+    );
+  }
+}
+
+export default BarChartWithButton;
+
 
 function BootstrapDialogTitle(props: DialogTitleProps) {
   const { children, onClose, ...other } = props;
@@ -111,16 +313,19 @@ function App() {
     bgcolor: 'background.paper',
   };
 
+  const tip_ids = ["oceanfront oasis inc carriers|3172", "mar de la vida ojsc|3177", "979893388|901", "8327|386"];
 
   const [showGraph, setShowGraph] = useState("2");
   const [counter, setCounter] = useState(2);
   const [nodegroups, setNodeGroups] = useState([{ index: 0, name: "", description: "", email:"" }]);
   const [suspiciongroups, setSuspicionGroups] = useState([
-    { index: 0, name: "oceanfront oasis inc carriers", nodeId: "oceanfront oasis inc carriers|3172" },
-    { index: 1, name: "mar de la vida ojsc", nodeId: "mar de la vida ojsc|3177" },
-    { index: 2, name: "979893388", nodeId: "979893388|901" },
-    { index: 3, name: "8327", nodeId: "8327|386" },
+    { index: 0, suspiciousness: suspicion_scores["oceanfront oasis inc carriers|3172"], name: "oceanfront oasis inc carriers", nodeId: "oceanfront oasis inc carriers|3172" },
+    { index: 1, suspiciousness: suspicion_scores["mar de la vida ojsc|3177"], name: "mar de la vida ojsc", nodeId: "mar de la vida ojsc|3177" },
+    { index: 2, suspiciousness: suspicion_scores["979893388|901"], name: "979893388", nodeId: "979893388|901" },
+    { index: 3, suspiciousness: suspicion_scores["8327|386"], name: "8327", nodeId: "8327|386" }
   ]);
+  const [illegalIds, setIllegalIds] = useState([]);
+  const [mostillegalnodes, setMostIllegalNodes] = useState(transform(suspicion_scores));
 
   const [drawerstate, setDrawerState] = useState(false);
   const [opendialog, setOpenDialog] = useState(false);
@@ -172,6 +377,9 @@ function App() {
         window.savedGraphs = json.graphs;
         setNodeGroups(json.nodegroups);
         // handle the json data here
+        setIllegalIds(json.illegalIds);
+        window.iii = json.illegalIds;
+        document.getElementById("barChartWithButtonnn").click();
       } catch (err) {
         // Handle the situation where the file content was not valid JSON
         console.error('Could not parse file content as JSON', err);
@@ -189,7 +397,7 @@ function App() {
       //Add the node data here
       var dataStr =
         'data:vast/json;charset=utf-8,' +
-        encodeURIComponent(JSON.stringify({ nodegroups: nodegroups, graphs: window.savedGraphs }));
+        encodeURIComponent(JSON.stringify({ nodegroups: nodegroups, graphs: window.savedGraphs, illegalIds: illegalIds }));
       const download = document.createElement('a');
       download.setAttribute('href', dataStr);
       download.setAttribute('download', 'analysis_' + Date().toLocaleString() + '.json');
@@ -331,7 +539,7 @@ function App() {
                   >
                     <Tab value="1" id="user_tip" text="Use Tips" />
                     <Tab value="2" id="detailed_button" text="Detailed" />
-                    <Tab value="3" id="overview_button" text="Overview" style={{ visibility: "hidden" }}/>
+                    <Tab value="4" id="analysis_button" text="Illegality analysis"/>
                   </TabList>
                 </>
                   <div
@@ -350,7 +558,7 @@ function App() {
                       display: showGraph === "3" ?  "block" : "none",
                     }}
                   >
-                    <iframe id="cosmos" src="./cosmos.html" scrolling="no" width="100%" height="1000px"></iframe>
+                    {/* <iframe id="cosmos" src="./cosmos.html" scrolling="no" width="100%" height="1000px"></iframe> */}
                   </div>
                   <div
                     style={{
@@ -381,6 +589,13 @@ function App() {
                         </Card>
                       </Col>
                     </Grid>
+                  </div>
+                  <div
+                    style={{
+                      display: showGraph === "4" ? "block" : "none",
+                    }}
+                  >
+                    <BarChartWithButton id="barChartWithButtonnn" illegalIds={illegalIds} setMostIllegalNodes={setMostIllegalNodes} mostillegalnodes={mostillegalnodes} setSuspicionGroups={setSuspicionGroups}></BarChartWithButton>
                   </div>
               </div>
             </Col>
@@ -427,25 +642,128 @@ function App() {
                 </Card>
                 <div style={{ padding: "5px" }}></div>
                 <Accordion expanded>
-                  <AccordionHeader>
-                    Investigate me!
+                <AccordionHeader>
+                    Tips
                   </AccordionHeader>
-                  <AccordionBody>
-                    <List sx={style} aria-label="mailbox folders">
-                      {
-                        suspiciongroups.map((val, i) =>
+                <AccordionBody style={{ height: '30vh', overflowY: 'auto' }}>
+                  <List sx={style} aria-label="mailbox folders">
+                    {
+                      suspiciongroups.map((val, i) => {
+                        const [selected, setSelected] = useState(val.suspiciousness > 0.999 ? 'illegal' : 'legal');
+                        if (val.suspiciousness > 0.999) {
+                          if (selected != 'illegal') {
+                            setSelected('illegal');
+                          }
+                        } else {
+                          if (selected != 'legal') {
+                            setSelected('legal');
+                          }
+                        }
+                        console.log("selected", selected);
+                        const handleToggle = (event, newSelected) => {
+                          event.stopPropagation();
+                          if (newSelected !== null) { // Avoid deselecting both options
+                            setSelected(newSelected);
+                            if (newSelected === 'legal') {
+                              setIllegalIds(ids => ids.filter(id => id !== val.nodeId)); // remove nodeId from illegalIds
+                            } else {
+                              setIllegalIds(ids => [...ids, val.nodeId]);
+                            }
+                          }
+                        };
+                        return (
                           <Grid className="gap-2">
-                            <ListItem button onClick={(e) => handleSusChange(e, val.nodeId)}>
-                              {
-                                <ListItemText> {val.name} </ListItemText>
-                              }
+                            <ListItem style={{ backgroundColor: `rgb(100%, ${100 - 100*val.suspiciousness}%, ${100 -100*val.suspiciousness}%)`}} button onClick={(e) => handleSusChange(e, val.nodeId)}>
+                              <ListItemText style={{ wordWrap: 'break-word' }}> {val.name} </ListItemText>
+              
+                              <ToggleButtonGroup
+                                exclusive
+                                value={selected}
+                                onChange={handleToggle}
+                              >
+                                <ToggleButton value="illegal" aria-label="illegal">
+                                  <Tooltip title="Illegal">
+                                    <WarningIcon />
+                                  </Tooltip>
+                                </ToggleButton>
+              
+                                <ToggleButton value="legal" aria-label="legal">
+                                  <Tooltip title="Legal">
+                                    <CheckCircleIcon />
+                                  </Tooltip>
+                                </ToggleButton>
+                              </ToggleButtonGroup>
                             </ListItem>
                             <Divider />
                           </Grid>
                         )
-                      }
-                    </List>
-                  </AccordionBody>
+                      })
+                    }
+                  </List>
+                </AccordionBody>
+                </Accordion>
+                <Accordion expanded>
+                  <AccordionHeader>
+                    100 most illegal nodes
+                  </AccordionHeader>
+                  <AccordionBody style={{ height: '30vh', overflowY: 'auto' }}>
+                  <List sx={style} aria-label="mailbox folders">
+                    {
+                      mostillegalnodes.map((val, i) => {
+                        const [selected, setSelected] = useState(val.suspiciousness > 0.999 ? 'illegal' : 'legal');
+                        if (val.suspiciousness > 0.999) {
+                          if (selected != 'illegal') {
+                            setSelected('illegal');
+                          }
+                        } else {
+                          if (selected != 'legal') {
+                            setSelected('legal');
+                          }
+                        }                        useEffect(() => {
+                          if (selected === 'illegal') {
+                            setIllegalIds(ids => [...ids, val.nodeId]);
+                          }
+                        }, [selected]);
+                        const handleToggle = (event, newSelected) => {
+                          event.stopPropagation();
+                          if (newSelected !== null) { // Avoid deselecting both options
+                            setSelected(newSelected);
+                            if (newSelected === 'legal') {
+                              setIllegalIds(ids => ids.filter(id => id !== val.nodeId));
+                            } else {
+                              setIllegalIds(ids => [...ids, val.nodeId]);
+                            }
+                          }
+                        };
+                        const res = <Grid className="gap-2">
+                        <ListItem style={{ backgroundColor: `rgb(100%, ${100 - 100*val.suspiciousness}%, ${100 -100*val.suspiciousness}%)` }}  button onClick={(e) => handleSusChange(e, val.nodeId)}>
+                          <ListItemText style={{ wordWrap: 'break-word' }}> {val.name} </ListItemText>
+          
+                          <ToggleButtonGroup
+                            exclusive
+                            value={selected}
+                            onChange={handleToggle}
+                          >
+                            <ToggleButton value="illegal" aria-label="illegal">
+                              <Tooltip title="Illegal">
+                                <WarningIcon />
+                              </Tooltip>
+                            </ToggleButton>
+          
+                            <ToggleButton value="legal" aria-label="legal">
+                              <Tooltip title="Legal">
+                                <CheckCircleIcon />
+                              </Tooltip>
+                            </ToggleButton>
+                          </ToggleButtonGroup>
+                        </ListItem>
+                        <Divider />
+                      </Grid>
+                      return [res, val.suspiciousness];
+                      }).sort((a, b) => b[1] - a[1]).slice(0, 100).map(x => x[0])
+                    }
+                  </List>
+                </AccordionBody>
                 </Accordion>
                 <SpeedDial
                   ariaLabel="SpeedDial basic"

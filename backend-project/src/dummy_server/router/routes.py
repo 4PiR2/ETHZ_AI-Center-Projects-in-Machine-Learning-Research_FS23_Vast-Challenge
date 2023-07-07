@@ -3,6 +3,7 @@ from flask import request, jsonify
 from dummy_server.resources.calculate_scores import get_scores
 from dummy_server.resources.get_data import get_graph, get_illegal_nodes, get_user_flags, add_user_flag, add_illegal_node
 from dummy_server.resources.cluster import compute_reordering, embed_and_cluster, compute_subgraph, calculate_centrality
+from dummy_server.resources.rerun_analysis import rerun_analysis_local
 
 def add_routes(app):
     api = Api(app)
@@ -21,6 +22,12 @@ def add_routes(app):
     @app.route('/api/v1/graph')
     def get_graph_data():
         return get_graph()
+    
+    @app.route('/api/v1/rerun_analysis', methods=['POST'])
+    def rerun_analysis():
+        data = request.get_json()
+        return jsonify(rerun_analysis_local(data))
+
 
     @app.route('/api/v1/illegal_nodes')
     def get_illegal_nodes_data():
