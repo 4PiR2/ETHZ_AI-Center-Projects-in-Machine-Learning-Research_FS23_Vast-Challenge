@@ -117,8 +117,8 @@ const config: GraphConfigInterface<Node, Link> = {
     // randomSeed: undefined,
 };
 
-// const driver: neo4j.Driver = neo4j.driver('bolt://' + location.hostname + ':7687', neo4j.auth.basic('neo4j', '12345678'), {/* encrypted: 'ENCRYPTION_OFF' */});
-const driver: neo4j.Driver = neo4j.driver('bolt://' + 'mtc-desktop-09.ethz.ch' + ':7687', neo4j.auth.basic('neo4j', '12345678'), {/* encrypted: 'ENCRYPTION_OFF' */});
+const driver: neo4j.Driver = neo4j.driver('bolt://' + location.hostname + ':7687', neo4j.auth.basic('neo4j', 'password'), {/* encrypted: 'ENCRYPTION_OFF' */});
+// const driver: neo4j.Driver = neo4j.driver('bolt://' + 'mtc-desktop-09.ethz.ch' + ':7687', neo4j.auth.basic('neo4j', '12345678'), {/* encrypted: 'ENCRYPTION_OFF' */});
 let canvas_graph: HTMLCanvasElement = document.querySelector('#graph') as HTMLCanvasElement;
 let graph: Graph<Node, Link> = new Graph(canvas_graph, config);
 const cosmosLabels = new CosmosLabels<Node, Link>(document.querySelector('#labels') as HTMLDivElement, graph);

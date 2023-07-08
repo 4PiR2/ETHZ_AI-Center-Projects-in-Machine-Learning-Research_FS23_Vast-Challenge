@@ -20,6 +20,7 @@ const DrawerComponent = ({ drawerState, toggleDrawer }) => {
       setMatrix("too many nodes");
     } else {
       const [adjMat, orderedIds] = await createAdjacencyMatrix(nodeIds);
+      orderedIds = JSON.parse(JSON.stringify(orderedIds));
       setMatrix(adjMat);
       setOrderedIds(orderedIds);
     }
@@ -41,8 +42,10 @@ const DrawerComponent = ({ drawerState, toggleDrawer }) => {
     } else if (matrix === "too many nodes") {
       return <Alert severity="warning">Please select at most 100 nodes.</Alert>;
     } else {
-      const nodeIds = orderedIds.map(id => window.graph.findById(id)).map(node => ({id: node.getModel().id, img: node.getModel().icon.img, color: node.getModel().style.fill}));
-      return renderMatrix(nodeIds);
+      // try {
+        const nodeIds = orderedIds.map(id => window.graph.findById(id)).map(node => ({id: node.getModel().id, img: node.getModel().icon.img, color: node.getModel().style.fill}));
+        return renderMatrix(nodeIds);
+      // } 
     }
   };
 

@@ -1,4 +1,4 @@
-import {getNodeData} from './data.js';
+import {getNodeData, getNodeDatas} from './data.js';
 import {menu} from './menu.js';
 import {legend} from './legend.js';
 import {tooltip} from './tooltip.js';
@@ -57,11 +57,23 @@ function setViewToNode(nodeId) {
 }
 window.parent.setViewToNode = setViewToNode
 
+function setViewToNodes(nodeIds) {
+  const nodeData = getNodeDatas(nodeIds);
+  console.log("nodeData", nodeData);
+  graph.data(nodeData);
+  graph.render();
+  // graph.destroyLayout();
+  // graph.getNodes().forEach(node => {node.setState('selected', true)});
+  // graph.getNodes().forEach(node => {node.setState('selected', false)});
+  graph.fitView();
+}
+
 function main() {
-  setViewToNode(targetIDs[0]);
+  setViewToNodes(targetIDs);
+
   window.parent.graph = graph;
-  window.parent.saveView(1, `Organization ${targetIDs[0].split("|")[0]}`, 
-  'We received a tip that this organization is involved in illegal fishery. Can you investigate its connections?')
+  window.parent.saveView(1, `All tips.`, 
+  'This view shows all tips.')
   window.parent.data = data;
   // window.parent.savedGraphs[0] = JSON.parse(JSON.stringify(graph.save()));
 }

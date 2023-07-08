@@ -126,6 +126,19 @@ export function getNodeData(nodeId) {
   return newData;
 }
 
+export function getNodeDatas(nodeIds) {
+  const newData = new Object();
+  newData.nodes = data.nodes.filter(node => nodeIds.includes(node.id));
+  for (var i = 0; i < newData.nodes.length; i++) { 
+    newData.nodes[i].x = i * 100;
+    newData.nodes[i].y = i * 100;
+    newData.nodes[i] = augmentNode(newData.nodes[i], )
+  }
+  newData.edges = [];
+  console.log("newData", newData);
+  return newData;
+}
+
 function nodeIndexesToData(nodeIds) {
   nodeIds = new Set(nodeIds);
   const newNodes =   data.nodes.filter(node => nodeIds.has(parseInt(node.id.split("|")[1]))).map(augmentNode);

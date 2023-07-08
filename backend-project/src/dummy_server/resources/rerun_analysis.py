@@ -26,6 +26,8 @@ categories = np.array(sorted(list(set([node['type'] for node in data['nodes'] if
 one_hot_encoder = OneHotEncoder(sparse=False)
 one_hot_encoder.fit(categories)
 betweenness_centralities = nx.betweenness_centrality(G)
+closeness_centrality = nx.closeness_centrality(G)
+clustering_coefficient = nx.clustering(nx.Graph(G.to_undirected()))
 pagerank_scores = nx.pagerank(G)
 # Compute feature vectors
 feature_vectors = dict()
@@ -48,6 +50,8 @@ for node in G.nodes(data=True):
     feature_vector.append(0)
     feature_vector.append(betweenness_centralities[node[0]])
     feature_vector.append(pagerank_scores[node[0]])
+    feature_vector.append(closeness_centrality[node[0]])
+    feature_vector.append(clustering_coefficient[node[0]])
     feature_vectors[node[0]] = feature_vector
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
@@ -69,7 +73,7 @@ def rerun_analysis_local(illegal_node_ids):
                             'Outgoing fraction: membership', 'Incoming fraction: membership',
                             'Outgoing fraction: ownership', 'Incoming fraction: ownership',
                             'Number of incoming edges', 'Number of outgoing edges', 
-                            'Betweenness centrality', 'Pagerank'] 
+                            'Betweenness centrality', 'Pagerank', 'Closeness centrality', 'Clustering Coefficient'] 
     # Scale feature vectors
     scaler = StandardScaler()
     feature_vector_list_scaled = scaler.fit_transform(feature_vector_list)

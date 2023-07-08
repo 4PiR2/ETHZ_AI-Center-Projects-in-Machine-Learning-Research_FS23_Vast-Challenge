@@ -174,7 +174,8 @@ class BarChartWithButton extends React.Component {
         'Incoming edges',
         'Outgoing edges',
         'Betweenness centrality',
-        'Pagerank'],
+        'Pagerank',
+        ,'Closeness centrality', 'Clustering Coefficient'],
         datasets: [{
           label: 'Importance of features for node illegality',
           data: [
@@ -586,6 +587,7 @@ function App() {
                   >
                     <Tab value="1" id="user_tip" text="Use Tips" />
                     <Tab value="2" id="detailed_button" text="Detailed" />
+                    <Tab value="3" id="overview_button" text="Overview" style={{ visibility: "hidden" }}/>
                     <Tab value="4" id="analysis_button" text="Illegality analysis"/>
                   </TabList>
                 </>
@@ -605,7 +607,7 @@ function App() {
                       display: showGraph === "3" ?  "block" : "none",
                     }}
                   >
-                    {/* <iframe id="cosmos" src="./cosmos.html" scrolling="no" width="100%" height="1000px"></iframe> */}
+                    <iframe id="cosmos" src="./cosmos.html" scrolling="no" width="100%" height="1000px"></iframe>
                   </div>
                   <div
                     style={{
