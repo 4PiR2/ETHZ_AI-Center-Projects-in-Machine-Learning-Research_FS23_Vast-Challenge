@@ -7,6 +7,7 @@ let pressedOnce = false;
 
 const DrawerComponent = ({ drawerState, toggleDrawer }) => {
   const [matrix, setMatrix] = useState(null);
+  const [orderedIds, setOrderedIds] = useState(null);
 
   const handleUpdateMatrix = async () => {
     pressedOnce = true;
@@ -18,8 +19,9 @@ const DrawerComponent = ({ drawerState, toggleDrawer }) => {
     } else if (nodeIds.length > 100) {
       setMatrix("too many nodes");
     } else {
-      const adjMat = await createAdjacencyMatrix(nodeIds);
+      const [adjMat, orderedIds] = await createAdjacencyMatrix(nodeIds);
       setMatrix(adjMat);
+      setOrderedIds(orderedIds);
     }
   }
 
@@ -39,7 +41,7 @@ const DrawerComponent = ({ drawerState, toggleDrawer }) => {
     } else if (matrix === "too many nodes") {
       return <Alert severity="warning">Please select at most 100 nodes.</Alert>;
     } else {
-      const nodeIds = window.graph.findAllByState('node', 'selected').map(node => ({id: node.getModel().id, img: node.getModel().icon.img, color: node.getModel().style.fill}));
+      const nodeIds = orderedIds.map(id => window.graph.findById(id)).map(node => ({id: node.getModel().id, img: node.getModel().icon.img, color: node.getModel().style.fill}));
       return renderMatrix(nodeIds);
     }
   };
@@ -118,5 +120,5 @@ async function createAdjacencyMatrix(nodeIds) {
     matrix[sourceIndex][targetIndex] = {customId: edge.customId, weight: edge.weight};
   });
 
-  return matrix;
+  return [matrix, nodeIds];
 }

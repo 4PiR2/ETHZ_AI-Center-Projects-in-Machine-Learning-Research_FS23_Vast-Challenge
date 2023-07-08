@@ -99,6 +99,38 @@ function transform(dict) {
   return result;
 }
 
+
+function transform2(dict) {
+  let result = [];
+  let index = 0;
+  const entries = Object.entries(dict);
+  entries.sort((a, b) => {
+    if (a[0] < b[0]) {
+        return -1;
+    } else if (a[0] > b[0]) {
+        return 1;
+    } else {
+        return 0;
+    }
+  });
+  // // Sort the entries based on a custom function of the values
+  // entries.sort((a, b) => {
+  //   const valueA = a[1];
+  //   const valueB = b[1];
+    
+  //   // Custom sorting logic based on the values
+  //   return valueB - valueA;
+  // });
+  for (const [nodeId, _] of entries) {
+    let name = nodeId.split('|')[0];  // Extract name from nodeId
+    let suspiciousness = dict[nodeId];
+    if (suspiciousness == 1)
+      result.push(nodeId); 
+    index++;
+  }
+  return result;
+}
+
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
     padding: theme.spacing(2),
@@ -202,6 +234,8 @@ class BarChartWithButton extends React.Component {
       }
   
       const data = await response.json();
+      // Update illegal IDs
+      this.props.setIllegalIds(transform2(data.suspicion_scores));
       // Update illegal node list
       const setMostIllegalNodes = this.props.setMostIllegalNodes;
       const new_most_illegal_nodes = transform(data.suspicion_scores);
@@ -324,7 +358,20 @@ function App() {
     { index: 2, suspiciousness: suspicion_scores["979893388|901"], name: "979893388", nodeId: "979893388|901" },
     { index: 3, suspiciousness: suspicion_scores["8327|386"], name: "8327", nodeId: "8327|386" }
   ]);
-  const [illegalIds, setIllegalIds] = useState([]);
+  const [illegalIds, setIllegalIds] = useState([
+    "armed robbery|166",
+    "game thief|1371",
+    "illegal|2568",
+    "deepwater horizon|2680",
+    "shabu|2987",
+    "shark fin|3043",
+    "illegal|3155",
+    "cartel emergent weaponry use|3207",
+    "dark web vendor illegal narcotics|3328",
+    "heroin cocaine exchange bitcoin|3329",
+    "officer pleads guilty|3368",
+    "bribes exchange smuggling contraband|3369"
+  ]);
   const [mostillegalnodes, setMostIllegalNodes] = useState(transform(suspicion_scores));
 
   const [drawerstate, setDrawerState] = useState(false);
@@ -595,7 +642,7 @@ function App() {
                       display: showGraph === "4" ? "block" : "none",
                     }}
                   >
-                    <BarChartWithButton id="barChartWithButtonnn" illegalIds={illegalIds} setMostIllegalNodes={setMostIllegalNodes} mostillegalnodes={mostillegalnodes} setSuspicionGroups={setSuspicionGroups}></BarChartWithButton>
+                    <BarChartWithButton id="barChartWithButtonnn" illegalIds={illegalIds} setIllegalIds={setIllegalIds} setMostIllegalNodes={setMostIllegalNodes} mostillegalnodes={mostillegalnodes} setSuspicionGroups={setSuspicionGroups}></BarChartWithButton>
                   </div>
               </div>
             </Col>
@@ -649,17 +696,7 @@ function App() {
                   <List sx={style} aria-label="mailbox folders">
                     {
                       suspiciongroups.map((val, i) => {
-                        const [selected, setSelected] = useState(val.suspiciousness > 0.999 ? 'illegal' : 'legal');
-                        if (val.suspiciousness > 0.999) {
-                          if (selected != 'illegal') {
-                            setSelected('illegal');
-                          }
-                        } else {
-                          if (selected != 'legal') {
-                            setSelected('legal');
-                          }
-                        }
-                        console.log("selected", selected);
+                        const [selected, setSelected] = useState(illegalIds.includes(val.nodeId) ? 'illegal' : 'legal');
                         const handleToggle = (event, newSelected) => {
                           event.stopPropagation();
                           if (newSelected !== null) { // Avoid deselecting both options
@@ -710,16 +747,8 @@ function App() {
                   <List sx={style} aria-label="mailbox folders">
                     {
                       mostillegalnodes.map((val, i) => {
-                        const [selected, setSelected] = useState(val.suspiciousness > 0.999 ? 'illegal' : 'legal');
-                        if (val.suspiciousness > 0.999) {
-                          if (selected != 'illegal') {
-                            setSelected('illegal');
-                          }
-                        } else {
-                          if (selected != 'legal') {
-                            setSelected('legal');
-                          }
-                        }                        useEffect(() => {
+                        const [selected, setSelected] = useState(illegalIds.includes(val.nodeId) ? 'illegal' : 'legal');
+                        useEffect(() => {
                           if (selected === 'illegal') {
                             setIllegalIds(ids => [...ids, val.nodeId]);
                           }

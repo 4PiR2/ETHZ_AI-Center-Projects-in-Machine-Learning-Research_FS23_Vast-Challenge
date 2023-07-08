@@ -3,8 +3,6 @@ import networkx as nx
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 import pandas as pd
-import random
-
 
 with open("/home/robert/g/vast-challenge/backend-project/data/MC1_preprocessed.json", "r") as f:
     data = json.load(f)
@@ -101,7 +99,6 @@ def rerun_analysis_local(illegal_node_ids):
     bias = intercept.tolist()[0]
     chartData = coefs.tolist()
     id_to_probability = {id: 1 if id in illegal_node_ids else probability for id, probability in zip(feature_vectors.keys(), probabilities)}
-    id_to_probability["oceanfront oasis inc carriers|3172"] = random.random()
     res = {
         'suspicion_scores': id_to_probability,
         'chartData': chartData,
