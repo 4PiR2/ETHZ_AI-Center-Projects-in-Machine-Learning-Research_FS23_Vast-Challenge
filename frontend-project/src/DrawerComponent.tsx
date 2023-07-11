@@ -4,10 +4,10 @@ import { Drawer, Button, Tooltip, Alert, Box } from '@mui/material';
 import { Matrix } from './Matrix';
 
 let pressedOnce = false;
+var orderedIds = null;
 
 const DrawerComponent = ({ drawerState, toggleDrawer }) => {
   const [matrix, setMatrix] = useState(null);
-  const [orderedIds, setOrderedIds] = useState(null);
 
   const handleUpdateMatrix = async () => {
     pressedOnce = true;
@@ -19,10 +19,9 @@ const DrawerComponent = ({ drawerState, toggleDrawer }) => {
     } else if (nodeIds.length > 100) {
       setMatrix("too many nodes");
     } else {
-      const [adjMat, orderedIds] = await createAdjacencyMatrix(nodeIds);
-      orderedIds = JSON.parse(JSON.stringify(orderedIds));
-      setMatrix(adjMat);
-      setOrderedIds(orderedIds);
+      const [adjMat, orderedIdsRetr] = await createAdjacencyMatrix(nodeIds);
+      orderedIds = JSON.parse(JSON.stringify(orderedIdsRetr));
+      setMatrix(JSON.parse(JSON.stringify(adjMat)));
     }
   }
 
@@ -42,10 +41,12 @@ const DrawerComponent = ({ drawerState, toggleDrawer }) => {
     } else if (matrix === "too many nodes") {
       return <Alert severity="warning">Please select at most 100 nodes.</Alert>;
     } else {
-      // try {
+      try {
         const nodeIds = orderedIds.map(id => window.graph.findById(id)).map(node => ({id: node.getModel().id, img: node.getModel().icon.img, color: node.getModel().style.fill}));
         return renderMatrix(nodeIds);
-      // } 
+      } catch(err) {
+        return undefined;
+      }
     }
   };
 

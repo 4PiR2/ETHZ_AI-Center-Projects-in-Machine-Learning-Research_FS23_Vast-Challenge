@@ -10,6 +10,8 @@ import showEdgesIcon from './icons/show.png';
 import hideEdgesIcon from './icons/hide.png';
 import removeIcon from './icons/remove.png';
 import groupIcon from './icons/group.png';
+import illegalIcon from './icons/illegal.png';
+import legalIcon from './icons/legal.png';
 
 const menuItems = [
   { text: 'Expand', icon: expandIcon },
@@ -20,6 +22,8 @@ const menuItems = [
   { text: 'Hide Edges', icon: hideEdgesIcon },
   { text: 'Remove', icon: removeIcon },
   { text: 'Group', icon: groupIcon },
+  { text: 'Label Illegal', icon: illegalIcon },
+  { text: 'Label Legal', icon: legalIcon },
 ];
 
 function dataToRadial(data) {
@@ -310,6 +314,12 @@ export const menu = new G6.Menu({
       } else if (isType('Group')) {
         addComboForSelection(graph);
         graph.fitView();
+      } else if (isType('Label Illegal')) {
+        const newIllegalIds = graph.findAllByState('node', 'selected').map(node => node.get('id'));
+        window.parent.setIllegalIds(ids => [...ids, ...newIllegalIds]);
+      } else if (isType('Label Legal')) {
+        const newLegalIds = graph.findAllByState('node', 'selected').map(node => node.get('id'));
+        window.parent.setIllegalIds(ids => ids.filter(id => !newLegalIds.includes(id)));
       }
     },
   });

@@ -100,7 +100,7 @@ function Matrix({ matrix, cellSize, cellSpacing, labels }) {
                   style={{ 
                     width: `${cellSize}px`, 
                     height: `${cellSize}px`, 
-                    backgroundColor: weightToGrayscale(cell.weight),
+                    backgroundColor: (cell.weight === undefined ? 'rgb(255, 255, 255)' : weightToGrayscale(cell.weight)),
                   }}
                   onMouseDown={e => handleMouseDown(i, j, e)}
                   onMouseUp={e => handleMouseUp(i, j)}

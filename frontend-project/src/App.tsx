@@ -41,9 +41,12 @@ import contextmenu from './contextmenu.png';
 import ToggleButton from '@mui/lab/ToggleButton';
 import ToggleButtonGroup from '@mui/lab/ToggleButtonGroup';
 import suspicion_scores from './suspicion_scores.json';
+import feature_vectors from './feature_vectors.json';
 import { Chart, registerables } from 'chart.js';
 import { scaleLinear } from 'd3';
 
+window.featureVectors = feature_vectors;
+// window.featureVectors = new Object();
 
 Chart.register(...registerables)
 
@@ -174,36 +177,37 @@ class BarChartWithButton extends React.Component {
         'Incoming edges',
         'Outgoing edges',
         'Betweenness centrality',
-        'Pagerank',
-        ,'Closeness centrality', 'Clustering Coefficient'],
+        'Pagerank', 'Closeness centrality', 'Clustering Coefficient'],
         datasets: [{
           label: 'Importance of features for node illegality',
           data: [
-            0.23971944192235503,
-            0.21208654936861596,
+            0.25233211877418193,
+            0.2152835813389664,
             0.0,
-            0.24814192753586592,
-            -0.17143348973739228,
-            -0.023198581533754228,
-            0.22017107649605233,
-            0.30851775762546485,
-            -0.4628879244447966,
-            -0.5180756557070315,
-            0.28570803263470756,
+            0.25323380017047814,
+            -0.18123355928556525,
+            -0.04969818159517053,
+            0.22939255376349155,
+            0.3038386170349574,
+            -0.43704998845030696,
+            -0.558985149842043,
+            0.2531684587943162,
             0.0,
-            -0.24142438840671115,
-            0.44937987540996455,
-            -0.288728108009589,
+            -0.2958872185876823,
+            0.42585113970080013,
+            -0.2706618689328205,
+            0.0,
+             0.0,
+            -0.13996371581994785,
             0.0,
             0.0,
-            -0.2271008874994434,
-            0.0,
-            0.0
+            0.20443731064703816,
+            0.4358394101621589    
           ],
           borderWidth: 1
         }]
       },
-      bias: -6.309163569931193 
+      bias: -6.43609819
     }
     this.handleButtonClick = this.handleButtonClick.bind(this);
 
@@ -251,6 +255,8 @@ class BarChartWithButton extends React.Component {
       //   console.log("done setting nodes");
       // }, []);
       // await sleep(2000);
+      // Update feature vectors
+      window.featureVectors = data.feature_vectors;
       // Update tips coloring
       const sgroups = [
         { index: 0, suspiciousness: data.suspicion_scores["oceanfront oasis inc carriers|3172"], name: "oceanfront oasis inc carriers", nodeId: "oceanfront oasis inc carriers|3172" },
@@ -373,6 +379,7 @@ function App() {
     "officer pleads guilty|3368",
     "bribes exchange smuggling contraband|3369"
   ]);
+  window.setIllegalIds = setIllegalIds;
   const [mostillegalnodes, setMostIllegalNodes] = useState(transform(suspicion_scores));
 
   const [drawerstate, setDrawerState] = useState(false);
